@@ -68,17 +68,18 @@ fun ReleaseCard(
         visible = true
     }
 
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.96f else 1f,
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+        label = "cardScale",
+    )
+
     AnimatedVisibility(
         visible = visible,
         enter = fadeIn() + slideInVertically { it / 2 },
     ) {
-        val interactionSource = remember { MutableInteractionSource() }
-        val isPressed by interactionSource.collectIsPressedAsState()
-        val scale by animateFloatAsState(
-            targetValue = if (isPressed) 0.96f else 1f,
-            animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
-            label = "cardScale",
-        )
         val accentColor = when (release.type) {
             ReleaseType.MOVIE  -> MovieAmber
             ReleaseType.SERIES -> SeriesBlue
@@ -165,7 +166,7 @@ fun ReleaseCard(
 
                 // Badge or countdown
                 if (release.status == ReleaseStatus.RELEASED) {
-                    WatchBadge(platform = release.platform)
+                    WatchBadge(platform = null)
                 } else {
                     CountdownText(airDate = release.airDate, airTime = release.airTime)
                 }
