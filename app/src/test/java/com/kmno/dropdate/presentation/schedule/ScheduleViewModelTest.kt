@@ -48,7 +48,7 @@ class ScheduleViewModelTest {
     fun tearDown() { Dispatchers.resetMain() }
 
     @Test
-    fun `initial state has correct defaults`() {
+    fun `initial state has correct defaults`() = runTest {
         val vm = ScheduleViewModel(getWeekReleases, syncReleases)
         val state = vm.state.value
         assertEquals(ContentFilter.ALL, state.activeFilter)
@@ -57,14 +57,14 @@ class ScheduleViewModelTest {
     }
 
     @Test
-    fun `onFilterChanged updates activeFilter`() {
+    fun `onFilterChanged updates activeFilter`() = runTest {
         val vm = ScheduleViewModel(getWeekReleases, syncReleases)
         vm.onFilterChanged(ContentFilter.ANIME)
         assertEquals(ContentFilter.ANIME, vm.state.value.activeFilter)
     }
 
     @Test
-    fun `onReleaseSelected sets selectedRelease`() {
+    fun `onReleaseSelected sets selectedRelease`() = runTest {
         val vm = ScheduleViewModel(getWeekReleases, syncReleases)
         val release = fakeRelease("1", ReleaseType.MOVIE, LocalDate.now())
         vm.onReleaseSelected(release)
@@ -72,7 +72,7 @@ class ScheduleViewModelTest {
     }
 
     @Test
-    fun `onSheetDismissed clears selectedRelease`() {
+    fun `onSheetDismissed clears selectedRelease`() = runTest {
         val vm = ScheduleViewModel(getWeekReleases, syncReleases)
         val release = fakeRelease("1", ReleaseType.MOVIE, LocalDate.now())
         vm.onReleaseSelected(release)

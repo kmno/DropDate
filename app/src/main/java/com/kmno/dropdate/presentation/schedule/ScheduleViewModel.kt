@@ -51,7 +51,6 @@ class ScheduleViewModel @Inject constructor(
 
     fun onWeekChanged(weekStart: LocalDate) {
         _state.update { it.copy(selectedWeekStart = weekStart) }
-        onRefresh()
     }
 
     fun onFilterChanged(filter: ContentFilter) {
@@ -70,9 +69,12 @@ class ScheduleViewModel @Inject constructor(
         val weekStart = _state.value.selectedWeekStart
         viewModelScope.launch {
             _state.update { it.copy(isSyncing = true, error = null) }
-            syncReleases(weekStart, weekStart.plusDays(6))
-                .onFailure { e -> _state.update { it.copy(error = e.message) } }
-            _state.update { it.copy(isSyncing = false) }
+            try {
+                syncReleases(weekStart, weekStart.plusDays(6))
+                    .onFailure { e -> _state.update { it.copy(error = e.message) } }
+            } finally {
+                _state.update { it.copy(isSyncing = false) }
+            }
         }
     }
 
