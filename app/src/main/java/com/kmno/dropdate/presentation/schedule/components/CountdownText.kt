@@ -68,7 +68,7 @@ private fun CountdownSegment(value: Int, unit: String) {
     AnimatedContent(
         targetState = value,
         transitionSpec = {
-            slideInVertically { it } togetherWith slideOutVertically { -it }
+            slideInVertically { -it } togetherWith slideOutVertically { it }
         },
         label = "countdown_$unit",
     ) { v ->

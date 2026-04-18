@@ -52,7 +52,7 @@ fun WatchBadge(platform: String?, modifier: Modifier = Modifier) {
     ) {
         Icon(
             imageVector = Icons.Default.PlayArrow,
-            contentDescription = null,
+            contentDescription = platform ?: "Watch",
             tint = TextPrimary,
             modifier = Modifier.size(10.dp),
         )
