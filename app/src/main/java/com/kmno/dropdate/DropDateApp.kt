@@ -10,12 +10,13 @@ import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import dagger.hilt.android.HiltAndroidApp
 import okhttp3.OkHttpClient
 import okio.Path.Companion.toOkioPath
-import javax.inject.Inject
 
 @HiltAndroidApp
 class DropDateApp : Application(), SingletonImageLoader.Factory {
 
-    @Inject lateinit var okHttpClient: OkHttpClient
+    // OkHttpClient created directly here; will be refactored to @Inject in Task 10
+    // once NetworkModule provides the singleton instance.
+    private val okHttpClient: OkHttpClient by lazy { OkHttpClient() }
 
     override fun newImageLoader(context: PlatformContext): ImageLoader =
         ImageLoader.Builder(this)
