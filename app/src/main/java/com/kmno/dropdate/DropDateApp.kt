@@ -7,6 +7,7 @@ import coil3.SingletonImageLoader
 import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
+import dagger.Lazy
 import dagger.hilt.android.HiltAndroidApp
 import okhttp3.OkHttpClient
 import okio.Path.Companion.toOkioPath
@@ -15,11 +16,11 @@ import javax.inject.Inject
 @HiltAndroidApp
 class DropDateApp : Application(), SingletonImageLoader.Factory {
 
-    @Inject lateinit var okHttpClient: OkHttpClient
+    @Inject lateinit var okHttpClient: Lazy<OkHttpClient>
 
     override fun newImageLoader(context: PlatformContext): ImageLoader =
         ImageLoader.Builder(this)
-            .components { add(OkHttpNetworkFetcherFactory(callFactory = { okHttpClient })) }
+            .components { add(OkHttpNetworkFetcherFactory(callFactory = { okHttpClient.get() })) }
             .memoryCache {
                 MemoryCache.Builder()
                     .maxSizePercent(this, 0.25)
