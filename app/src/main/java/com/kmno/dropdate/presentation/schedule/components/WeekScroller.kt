@@ -68,7 +68,7 @@ fun WeekScroller(
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.Start,
         ) {
             days.forEachIndexed { _, day ->
                 val isSelected = day == selectedDay

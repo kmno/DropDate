@@ -62,9 +62,13 @@ fun ContentTypeChips(
 ) {
     val selectedIndex = filters.indexOf(activeFilter).coerceAtLeast(0)
     val accentColor = activeFilter.accentColor()
+    val animatedAccentColor by animateColorAsState(
+        targetValue = accentColor,
+        animationSpec = tween(200),
+        label = "indicatorColor",
+    )
 
-    val chipWidths = remember { mutableStateListOf<Float>() }
-        .also { list -> repeat(filters.size - list.size) { list.add(0f) } }
+    val chipWidths = remember { mutableStateListOf(*Array(filters.size) { 0f }) }
 
     val density = LocalDensity.current
     val offsetDp by animateDpAsState(
@@ -110,7 +114,7 @@ fun ContentTypeChips(
                 .offset(x = offsetDp)
                 .width(indicatorWidthDp)
                 .height(2.dp)
-                .background(accentColor, RoundedCornerShape(1.dp))
+                .background(animatedAccentColor, RoundedCornerShape(1.dp))
         )
     }
 }
