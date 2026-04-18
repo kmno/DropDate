@@ -54,6 +54,7 @@ import com.kmno.dropdate.ui.theme.SeriesBlue
 import com.kmno.dropdate.ui.theme.Surface
 import com.kmno.dropdate.ui.theme.TextPrimary
 import com.kmno.dropdate.ui.theme.TextSecondary
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -124,12 +125,21 @@ fun ReleaseDetailSheet(
                 Spacer(Modifier.height(4.dp))
 
                 // Type · Year · Episode
-                val meta = buildString {
-                    append(release.type.name.lowercase().replaceFirstChar { it.uppercase() })
-                    release.airDate.year.let { append(" · $it") }
+                val metaRemainder = buildString {
+                    release.airDate.year.let { append("$it") }
                     release.episodeLabel?.let { append(" · $it") }
                 }
-                Text(text = meta, fontSize = 13.sp, color = TextSecondary)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = release.type.name.lowercase().replaceFirstChar { it.uppercase() },
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = accentColor,
+                    )
+                    if (metaRemainder.isNotBlank()) {
+                        Text(text = " · $metaRemainder", fontSize = 13.sp, color = TextSecondary)
+                    }
+                }
 
                 Spacer(Modifier.height(8.dp))
 
@@ -155,7 +165,7 @@ fun ReleaseDetailSheet(
 
                 // Synopsis
                 release.synopsis?.takeIf { it.isNotBlank() }?.let { synopsis ->
-                    SynopsisSection(synopsis = synopsis)
+                    SynopsisSection(synopsis = synopsis, accentColor = accentColor)
                     Spacer(Modifier.height(16.dp))
                 }
 
@@ -191,9 +201,10 @@ private fun StarRating(rating: Float, accentColor: Color) {
     )
     LaunchedEffect(Unit) { animatedRating = rating }
 
+    val starCount = (displayRating / 2f).roundToInt()
     Row(verticalAlignment = Alignment.CenterVertically) {
         repeat(5) { i ->
-            val filled = (displayRating / 2f) > i
+            val filled = i < starCount
             Text(
                 text = if (filled) "★" else "☆",
                 color = if (filled) accentColor else TextSecondary,
@@ -210,7 +221,7 @@ private fun StarRating(rating: Float, accentColor: Color) {
 }
 
 @Composable
-private fun SynopsisSection(synopsis: String) {
+private fun SynopsisSection(synopsis: String, accentColor: Color) {
     var expanded by remember { mutableStateOf(false) }
     val preview = synopsis.take(180).let { if (synopsis.length > 180) "$it…" else it }
 
@@ -242,7 +253,7 @@ private fun SynopsisSection(synopsis: String) {
             TextButton(onClick = { expanded = !expanded }) {
                 Text(
                     text = if (expanded) "Show less ↑" else "Show more ↓",
-                    color = SeriesBlue,
+                    color = accentColor,
                     fontSize = 13.sp,
                 )
             }
