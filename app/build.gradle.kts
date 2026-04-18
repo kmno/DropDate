@@ -105,6 +105,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
 
     // Testing
+    testImplementation(libs.mockito.kotlin)
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.androidx.room.testing)
