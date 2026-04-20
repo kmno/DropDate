@@ -172,7 +172,7 @@ fun ReleaseDetailSheet(
 
                 // Platform Badge
                 release.platform?.let { platform ->
-                    PlatformLogo(platform = platform, useActualLogo = true)
+                    PlatformLogo(platform = platform)
                     Spacer(Modifier.height(12.dp))
                 }
 

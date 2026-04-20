@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.androidx.room)
+    alias(libs.plugins.ktlint)
 }
 
 android {

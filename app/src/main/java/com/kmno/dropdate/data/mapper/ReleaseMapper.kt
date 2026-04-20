@@ -36,7 +36,7 @@ private val TMDB_TV_GENRES = mapOf(
 )
 
 private val POPULAR_PLATFORMS = setOf(
-    "netflix", "hbo", "max", "hulu", "amazon", "prime",
+    "netflix", "hbo", "max", "hulu", "amazon", "prime", "amc", "showmax", "mgm",
     "disney", "apple", "peacock", "paramount", "fx", "showtime", "crunchyroll"
 )
 
@@ -109,7 +109,6 @@ class ReleaseMapper @Inject constructor() {
         val tvEntities = tvShows.results
             .filter { "tmdb_t_${it.id}" !in seen && seen.add("tmdb_t_${it.id}") }
             .mapNotNull { dto ->
-                println("$$$$$$$$$$$$$$$$$$$$ ${dto.name} ${dto.firstAirDate} ")
                 val dateStr = dto.firstAirDate?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
                 val date = parseLocalDate(dateStr) ?: return@mapNotNull null
                 ReleaseEntity(

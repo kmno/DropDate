@@ -55,14 +55,17 @@ class ReleaseRepositoryImpl @Inject constructor(
                     watchProviders = TMDB_POPULAR_PROVIDERS
                 )
             }
-            // val tvMazeUS = async { tvMazeApi.getStreamingSchedule(weekStart.toString()) }
 
-            // TVMaze: fetch all 7 days in parallel for per-episode air dates
-            val tvMazeDays = (0..9).map { i ->
-                println("$$$$$$$$$$$$$$$$$$$$$$ ${weekStart.plusDays(i.toLong()).toString()}")
+            // TVMaze: rate limit allows 5 realtime calls; batch first 5 then delay for remaining 2
+            val tvMazeBatch1 = (0..14).map { i ->
                 async { tvMazeApi.getStreamingSchedule(weekStart.plusDays(i.toLong()).toString()) }
             }
-            val allTvMazeDays = tvMazeDays.awaitAll().flatten()
+            //val batch1Results = tvMazeBatch1.awaitAll()
+            //delay(1_000L)
+            // val tvMazeBatch2 = (5..6).map { i ->
+            // async { tvMazeApi.getStreamingSchedule(weekStart.plusDays(i.toLong()).toString()) }
+            // }
+            val allTvMazeDays = tvMazeBatch1.awaitAll().flatten()
 
             val anime = async { aniListApi.getAnimeSchedule(ANILIST_ANIME_QUERY) }
 
