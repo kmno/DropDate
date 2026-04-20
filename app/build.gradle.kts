@@ -60,6 +60,7 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
+    implementation(libs.coil.svg)
 
     // Lifecycle — ViewModel + Compose state collection
     implementation(libs.androidx.lifecycle.runtime.ktx)

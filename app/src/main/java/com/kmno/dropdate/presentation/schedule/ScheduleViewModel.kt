@@ -40,13 +40,11 @@ class ScheduleViewModel @Inject constructor(
                     _state.update { it.copy(isLoading = true) }
                     getWeekReleases(weekStart, weekStart.plusDays(6))
                         .map { releases ->
-                            // println("$$$$$$$$$$$$$$$$$$$$$$$$$ Received releases: $releases")
                             releases.groupAndFilter(filter, selectedDay)
                         }
                 }
                 .collectLatest { grouped ->
                     _state.update { it.copy(releases = grouped, isLoading = false) }
-                    println("Updated state: ${_state.value}")
                 }
         }
         onRefresh()

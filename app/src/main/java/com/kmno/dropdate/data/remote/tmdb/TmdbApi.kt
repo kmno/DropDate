@@ -39,6 +39,8 @@ interface TmdbApi {
     @GET("movie/upcoming")
     suspend fun getUpcomingMovies(
         @Query("api_key") apiKey: String = API_KEY,
+        @Query("watch_region") watchRegion: String = "US",
+        @Query("with_original_language") language: String = "en",
         @Query("page") page: Int = 1,
     ): TmdbMovieListDto
 

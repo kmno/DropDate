@@ -37,7 +37,7 @@ private val TMDB_TV_GENRES = mapOf(
 
 private val POPULAR_PLATFORMS = setOf(
     "netflix", "hbo", "max", "hulu", "amazon", "prime",
-    "disney", "apple", "peacock", "paramount"
+    "disney", "apple", "peacock", "paramount", "fx", "showtime", "crunchyroll"
 )
 
 private fun String.isPopularStreamer() =
@@ -52,12 +52,37 @@ class ReleaseMapper @Inject constructor() {
 
     fun fromTmdb(
         movies: TmdbMovieListDto,
+        upcomingMovies: TmdbMovieListDto,
         tvShows: TmdbTvListDto,
     ): List<ReleaseEntity> {
         val seen = mutableSetOf<String>()
         val now = System.currentTimeMillis()
 
         val movieEntities = movies.results
+            .filter { "tmdb_m_${it.id}" !in seen && seen.add("tmdb_m_${it.id}") }
+            .mapNotNull { dto ->
+                val dateStr = dto.releaseDate?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+                val date = parseLocalDate(dateStr) ?: return@mapNotNull null
+                ReleaseEntity(
+                    id = "tmdb_m_${dto.id}",
+                    title = dto.title,
+                    posterUrl = dto.posterPath?.let { "$TMDB_IMAGE_BASE$TMDB_POSTER_SIZE$it" },
+                    backdropUrl = dto.backdropPath?.let { "$TMDB_IMAGE_BASE$TMDB_BACKDROP_SIZE$it" },
+                    type = ReleaseType.MOVIE.name,
+                    status = releaseStatus(date),
+                    airDate = dateStr,
+                    airTime = null,
+                    platform = null,
+                    episodeLabel = null,
+                    rating = dto.voteAverage,
+                    synopsis = dto.overview,
+                    genres = dto.genreIds.mapNotNull { TMDB_MOVIE_GENRES[it] }.joinToString(",")
+                        .takeIf { it.isNotBlank() },
+                    syncedAt = now,
+                )
+            }
+
+        val uMovieEntities = upcomingMovies.results
             .filter { "tmdb_m_${it.id}" !in seen && seen.add("tmdb_m_${it.id}") }
             .mapNotNull { dto ->
                 val dateStr = dto.releaseDate?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
@@ -105,10 +130,7 @@ class ReleaseMapper @Inject constructor() {
                     syncedAt = now,
                 )
             }
-
-        println("$$$$$$$$$$$$$$$$$$$$ ${movieEntities + tvEntities}")
-
-        return movieEntities + tvEntities
+        return movieEntities + uMovieEntities + tvEntities
     }
 
     // ── TV Series (TVMaze) ──────────────────────────────────────────────────
@@ -128,7 +150,6 @@ class ReleaseMapper @Inject constructor() {
                 isPopular && isEnglish && isScripted
             }
             .mapNotNull { entry ->
-                // println("$$$$$$$$$$$$$ entry: ${entry}")
                 val show = entry.show ?: return@mapNotNull null
                 val id = "tvmaze_${show.id}"
                 if (id in seen) return@mapNotNull null

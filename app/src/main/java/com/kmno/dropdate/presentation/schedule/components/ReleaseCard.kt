@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,8 +34,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -48,49 +51,110 @@ import com.kmno.dropdate.ui.theme.Background
 import com.kmno.dropdate.ui.theme.DropDateTheme
 import com.kmno.dropdate.ui.theme.MovieAmber
 import com.kmno.dropdate.ui.theme.SeriesRed
-import com.kmno.dropdate.ui.theme.Surface
 import com.kmno.dropdate.ui.theme.TextPrimary
 import kotlinx.coroutines.delay
 import java.time.LocalDate
+import com.kmno.dropdate.ui.theme.Surface as ThemeSurface
 
 private val CardWidth  = 140.dp
 private val CardHeight = 210.dp
 
-private fun platformLabel(name: String): String = when {
-    name.contains("netflix", ignoreCase = true) -> "NETFLIX"
-    name.contains("max", ignoreCase = true) -> "MAX"
-    name.contains("hbo", ignoreCase = true) -> "HBO"
-    name.contains("hulu", ignoreCase = true) -> "HULU"
-    name.contains("prime", ignoreCase = true) -> "PRIME"
-    name.contains("amazon", ignoreCase = true) -> "PRIME"
-    name.contains("disney", ignoreCase = true) -> "DISNEY+"
-    name.contains("apple", ignoreCase = true) -> "APPLE TV+"
-    name.contains("peacock", ignoreCase = true) -> "PEACOCK"
-    name.contains("paramount", ignoreCase = true) -> "P+"
-    name.contains("crunchyroll", ignoreCase = true) -> "CRUNCHY"
-    name.contains("funimation", ignoreCase = true) -> "FUNI"
-    name.contains("showtime", ignoreCase = true) -> "SHOWTIME"
-    name.contains("starz", ignoreCase = true) -> "STARZ"
-    name.contains("hidive", ignoreCase = true) -> "HIDIVE"
-    else -> name.take(8).uppercase()
+object PlatformBranding {
+    fun getColor(name: String): Color = when {
+        name.contains("netflix", true) -> Color(0xFFE50914)
+        name.contains("disney", true) -> Color(0xFF113CCF)
+        name.contains("max", true) || name.contains("hbo", true) -> Color(0xFF0047FF)
+        name.contains("prime", true) || name.contains("amazon", true) -> Color(0xFF00A8E1)
+        name.contains("hulu", true) -> Color(0xFF1CE783)
+        name.contains("apple", true) -> Color(0xFF000000)
+        name.contains("peacock", true) -> Color(0xFF000000)
+        name.contains("paramount", true) -> Color(0xFF0064FF)
+        name.contains("crunchyroll", true) -> Color(0xFFF47521)
+        name.contains("funimation", true) -> Color(0xFF7700BA)
+        else -> Color(0xFF6B6B85)
+    }
+
+    fun getDisplayName(name: String): String = when {
+        name.contains("netflix", true) -> "NETFLIX"
+        name.contains("disney", true) -> "DISNEY+"
+        name.contains("max", true) -> "MAX"
+        name.contains("hbo", true) -> "HBO"
+        name.contains("prime", true) -> "PRIME"
+        name.contains("amazon", true) -> "PRIME"
+        name.contains("apple", true) -> "APPLE TV+"
+        name.contains("paramount", true) -> "P+"
+        name.contains("crunchyroll", true) -> "CRUNCHY"
+        else -> name.take(8).uppercase()
+    }
+
+    fun getLogoUrl(name: String): String? = when {
+        name.contains(
+            "netflix",
+            true
+        ) -> "https://www.logo.wine/a/logo/Netflix/Netflix-Logo.wine.svg"
+
+        name.contains(
+            "disney",
+            true
+        ) -> "https://www.logo.wine/a/logo/Disney%2B/Disney%2B-Logo.wine.svg"
+
+        name.contains("max", true) || name.contains(
+            "hbo",
+            true
+        ) -> "https://www.logo.wine/a/logo/HBO_Max/HBO_Max-Logo.wine.svg"
+
+        name.contains("prime", true) || name.contains(
+            "amazon",
+            true
+        ) -> "https://www.logo.wine/a/logo/Amazon_Prime/Amazon_Prime-Logo.wine.svg"
+
+        name.contains("hulu", true) -> "https://www.logo.wine/a/logo/Hulu/Hulu-Logo.wine.svg"
+        name.contains(
+            "apple",
+            true
+        ) -> "https://upload.wikimedia.org/wikipedia/commons/2/28/Apple_TV_Plus_Logo.svg"
+
+        name.contains(
+            "crunchy",
+            true
+        ) -> "https://www.logo.wine/a/logo/Crunchyroll/Crunchyroll-Logo.wine.svg"
+
+        else -> null
+    }
 }
 
-private fun platformColor(name: String): Color = when {
-    name.contains("netflix", ignoreCase = true) -> Color(0xFFE50914)
-    name.contains("max", ignoreCase = true) -> Color(0xFF7B61FF)
-    name.contains("hbo", ignoreCase = true) -> Color(0xFF7B61FF)
-    name.contains("hulu", ignoreCase = true) -> Color(0xFF1CE783)
-    name.contains("prime", ignoreCase = true) -> Color(0xFF00A8E1)
-    name.contains("amazon", ignoreCase = true) -> Color(0xFF00A8E1)
-    name.contains("disney", ignoreCase = true) -> Color(0xFF113CCF)
-    name.contains("apple", ignoreCase = true) -> Color(0xFFAAAAAA)
-    name.contains("peacock", ignoreCase = true) -> Color(0xFF0073E6)
-    name.contains("paramount", ignoreCase = true) -> Color(0xFF0064FF)
-    name.contains("crunchyroll", ignoreCase = true) -> Color(0xFFF47521)
-    name.contains("funimation", ignoreCase = true) -> Color(0xFF7700BA)
-    name.contains("showtime", ignoreCase = true) -> Color(0xFFCC0000)
-    name.contains("starz", ignoreCase = true) -> Color(0xFF000000)
-    else -> Color(0xFF888888)
+@Composable
+fun PlatformLogo(
+    platform: String,
+    modifier: Modifier = Modifier,
+    useActualLogo: Boolean = false
+) {
+    val logoUrl = if (useActualLogo) PlatformBranding.getLogoUrl(platform) else null
+    if (logoUrl != null) {
+        AsyncImage(
+            model = logoUrl,
+            contentDescription = platform,
+            modifier = modifier.height(16.dp),
+            contentScale = ContentScale.Fit,
+            filterQuality = FilterQuality.High
+        )
+    } else {
+        Surface(
+            color = PlatformBranding.getColor(platform),
+            shape = RoundedCornerShape(4.dp),
+            modifier = modifier
+        ) {
+            Text(
+                text = PlatformBranding.getDisplayName(platform),
+                color = Color.White,
+                fontSize = 7.sp,
+                fontWeight = FontWeight.Black,
+                modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
+                letterSpacing = 0.5.sp,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
 }
 
 @Composable
@@ -130,7 +194,7 @@ fun ReleaseCard(
                 .height(CardHeight)
                 .scale(scale)
                 .clip(RoundedCornerShape(12.dp))
-                .background(Surface)
+                .background(ThemeSurface)
                 .border(0.5.dp, accentColor.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
                 .clickable(
                     interactionSource = interactionSource,
@@ -161,22 +225,12 @@ fun ReleaseCard(
 
             // Platform badge — top-right
             release.platform?.let { p ->
-                val pColor = platformColor(p)
-                Box(
+                PlatformLogo(
+                    platform = p,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .padding(6.dp)
-                        .background(pColor.copy(alpha = 0.85f), RoundedCornerShape(4.dp))
-                        .padding(horizontal = 4.dp, vertical = 2.dp),
-                ) {
-                    Text(
-                        text = platformLabel(p),
-                        color = Color.White,
-                        fontSize = 7.sp,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                    )
-                }
+                )
             }
 
             // Content overlay
@@ -196,21 +250,9 @@ fun ReleaseCard(
                     lineHeight = 16.sp,
                 )
 
-                if (release.genres.isNotEmpty()) {
-                    Text(
-                        text = release.genres.take(2).joinToString(" • "),
-                        color = TextPrimary.copy(alpha = 0.6f),
-                        fontSize = 8.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(top = 2.dp)
-                    )
-                }
-
-                Spacer(Modifier.height(4.dp))
-
                 // Rating
                 release.rating?.let { r ->
+                    Spacer(Modifier.height(1.dp))
                     if (r > 0) {
                         Text(
                             text = "★ ${"%.1f".format(r)}",
@@ -221,7 +263,7 @@ fun ReleaseCard(
                     }
                 }
 
-                Spacer(Modifier.height(5.dp))
+                Spacer(Modifier.height(3.dp))
 
                 // Badge or countdown
                 if (release.status == ReleaseStatus.RELEASED) {

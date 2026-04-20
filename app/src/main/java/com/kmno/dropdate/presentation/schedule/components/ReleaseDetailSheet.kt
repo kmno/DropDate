@@ -1,7 +1,11 @@
 package com.kmno.dropdate.presentation.schedule.components
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -9,6 +13,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,6 +41,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -63,6 +69,14 @@ fun ReleaseDetailSheet(
     onDismiss: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    // Sync sheet state with ViewModel to prevent "frozen" state
+    LaunchedEffect(sheetState.isVisible) {
+        if (!sheetState.isVisible && !sheetState.hasExpandedState) {
+            onDismiss()
+        }
+    }
+
     val accentColor = when (release.type) {
         ReleaseType.MOVIE  -> MovieAmber
         ReleaseType.SERIES -> SeriesRed
@@ -156,17 +170,9 @@ fun ReleaseDetailSheet(
                     }
                 }
 
-                // Platform dot
+                // Platform Badge
                 release.platform?.let { platform ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(8.dp)
-                                .background(accentColor, CircleShape)
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        Text(text = platform, fontSize = 13.sp, color = accentColor, fontWeight = FontWeight.SemiBold)
-                    }
+                    PlatformLogo(platform = platform, useActualLogo = true)
                     Spacer(Modifier.height(12.dp))
                 }
 
@@ -177,22 +183,17 @@ fun ReleaseDetailSheet(
                 }
 
                 // CTA
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(if (release.status == ReleaseStatus.RELEASED) ReleasedGreen else Surface)
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    if (release.status == ReleaseStatus.RELEASED) {
-                        Text(
-                            "▶  Already Dropped!",
-                            color = TextPrimary,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp
-                        )
-                    } else {
+                if (release.status == ReleaseStatus.RELEASED) {
+                    ReleasedBanner(release = release)
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(Surface)
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
                         CountdownText(airDate = release.airDate, airTime = release.airTime)
                     }
                 }
@@ -269,6 +270,69 @@ private fun SynopsisSection(synopsis: String, accentColor: Color) {
                     fontSize = 13.sp,
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun ReleasedBanner(release: Release) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(ReleasedGreen.copy(alpha = 0.15f))
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Pulsing Indicator
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.size(24.dp)) {
+            val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+            val scale by infiniteTransition.animateFloat(
+                initialValue = 1f,
+                targetValue = 2.5f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(1200),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "scale"
+            )
+            val alpha by infiniteTransition.animateFloat(
+                initialValue = 0.5f,
+                targetValue = 0f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(1200),
+                    repeatMode = RepeatMode.Reverse
+                ),
+                label = "alpha"
+            )
+
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .scale(scale)
+                    .background(ReleasedGreen.copy(alpha = alpha), CircleShape)
+            )
+            Box(
+                modifier = Modifier
+                    .size(8.dp)
+                    .background(ReleasedGreen, CircleShape)
+            )
+        }
+
+        Spacer(Modifier.width(12.dp))
+
+        Row(
+            modifier = Modifier.weight(1f),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "AVAILABLE NOW",
+                color = ReleasedGreen,
+                fontWeight = FontWeight.Black,
+                fontSize = 12.sp,
+                letterSpacing = 1.sp
+            )
         }
     }
 }

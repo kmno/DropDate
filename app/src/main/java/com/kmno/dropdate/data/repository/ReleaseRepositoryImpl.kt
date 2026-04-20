@@ -10,12 +10,12 @@ import com.kmno.dropdate.data.remote.tvmaze.TvMazeApi
 import com.kmno.dropdate.domain.model.Release
 import com.kmno.dropdate.domain.repository.ReleaseRepository
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
 import javax.inject.Inject
-import kotlin.time.Duration.Companion.days
 
 class ReleaseRepositoryImpl @Inject constructor(
     private val dao: ReleaseDao,
@@ -45,6 +45,9 @@ class ReleaseRepositoryImpl @Inject constructor(
                     endDate = weekEnd.toString(),
                 )
             }
+            val upcomingMovies = async {
+                tmdbApi.getUpcomingMovies()
+            }
             val tvShows = async {
                 tmdbApi.discoverTv(
                     startDate = weekStart.toString(),
@@ -52,22 +55,31 @@ class ReleaseRepositoryImpl @Inject constructor(
                     watchProviders = TMDB_POPULAR_PROVIDERS
                 )
             }
-            val tvMazeUS = async { tvMazeApi.getStreamingSchedule(weekStart.toString()) }
+            // val tvMazeUS = async { tvMazeApi.getStreamingSchedule(weekStart.toString()) }
+
+            // TVMaze: fetch all 7 days in parallel for per-episode air dates
+            val tvMazeDays = (0..9).map { i ->
+                println("$$$$$$$$$$$$$$$$$$$$$$ ${weekStart.plusDays(i.toLong()).toString()}")
+                async { tvMazeApi.getStreamingSchedule(weekStart.plusDays(i.toLong()).toString()) }
+            }
+            val allTvMazeDays = tvMazeDays.awaitAll().flatten()
+
             val anime = async { aniListApi.getAnimeSchedule(ANILIST_ANIME_QUERY) }
 
             val entities = buildList {
                 addAll(
                     mapper.fromTmdb(
                         movies.await(),
+                        upcomingMovies.await(),
                         tvShows.await(),
                     )
                 )
-                addAll(mapper.fromTvMaze(tvMazeUS.await()))
+                addAll(mapper.fromTvMaze(allTvMazeDays))
+                // addAll(mapper.fromTvMaze(tvMazeUS.await()))
                 addAll(mapper.fromAniList(anime.await()))
             }
-            println("$$$$$$$$$$$$$$$$$$$$$ Received entities: ${entities.size}")
             dao.upsertAll(entities)
-            dao.deleteStale(System.currentTimeMillis() - 7.days.inWholeMilliseconds)
+            // dao.deleteStale(System.currentTimeMillis() - 7.days.inWholeMilliseconds)
         }
     }
 }

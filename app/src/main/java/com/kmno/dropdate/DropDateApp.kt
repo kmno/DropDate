@@ -7,6 +7,7 @@ import coil3.SingletonImageLoader
 import coil3.disk.DiskCache
 import coil3.memory.MemoryCache
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
+import coil3.svg.SvgDecoder
 import dagger.Lazy
 import dagger.hilt.android.HiltAndroidApp
 import okhttp3.OkHttpClient
@@ -20,7 +21,10 @@ class DropDateApp : Application(), SingletonImageLoader.Factory {
 
     override fun newImageLoader(context: PlatformContext): ImageLoader =
         ImageLoader.Builder(this)
-            .components { add(OkHttpNetworkFetcherFactory(callFactory = { okHttpClient.get() })) }
+            .components {
+                add(OkHttpNetworkFetcherFactory(callFactory = { okHttpClient.get() }))
+                add(SvgDecoder.Factory())
+            }
             .memoryCache {
                 MemoryCache.Builder()
                     .maxSizePercent(this, 0.25)
