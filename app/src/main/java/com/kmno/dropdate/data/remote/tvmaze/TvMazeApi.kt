@@ -7,10 +7,12 @@ interface TvMazeApi {
     @GET("schedule/web")
     suspend fun getStreamingSchedule(
         @Query("date") date: String,
+        //@Query("country") country: String = "US",
     ): List<TvMazeScheduleEntryDto>
 
     @GET("schedule")
     suspend fun getBroadcastSchedule(
         @Query("date") date: String,
+        @Query("country") country: String = "US",
     ): List<TvMazeScheduleEntryDto>
 }

@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,9 +22,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kmno.dropdate.domain.model.Release
+import com.kmno.dropdate.domain.model.ReleaseStatus
+import com.kmno.dropdate.domain.model.ReleaseType
+import com.kmno.dropdate.ui.theme.DropDateTheme
+import com.kmno.dropdate.ui.theme.MovieAmber
+import java.time.LocalDate
 
 @Composable
 fun ReleaseSection(
@@ -57,18 +61,6 @@ fun ReleaseSection(
                     fontWeight = FontWeight.Bold,
                     color = accentColor,
                 )
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = accentColor.copy(alpha = 0.15f),
-                ) {
-                    Text(
-                        text = releases.size.toString(),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = accentColor,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
-                    )
-                }
             }
         }
 
@@ -84,5 +76,41 @@ fun ReleaseSection(
                 )
             }
         }
+    }
+}
+
+private fun fakeRelease(
+    id: String,
+    title: String,
+    type: ReleaseType,
+    status: ReleaseStatus = ReleaseStatus.UPCOMING
+) =
+    Release(
+        id = id, title = title, posterUrl = null, backdropUrl = null,
+        type = type, status = status,
+        airDate = if (status == ReleaseStatus.UPCOMING) LocalDate.now()
+            .plusDays(5) else LocalDate.now().minusDays(1),
+        airTime = null, platform = null, episodeLabel = null, rating = 7.8f, synopsis = null,
+    )
+
+@Preview(showBackground = true, backgroundColor = 0xFF080810, widthDp = 360)
+@Composable
+private fun ReleaseSectionMoviesPreview() {
+    DropDateTheme {
+        ReleaseSection(
+            title = "Movies",
+            accentColor = MovieAmber,
+            releases = listOf(
+                fakeRelease("1", "Dune: Part Three", ReleaseType.MOVIE),
+                fakeRelease(
+                    "2",
+                    "Mission: Impossible 8",
+                    ReleaseType.MOVIE,
+                    ReleaseStatus.RELEASED
+                ),
+                fakeRelease("3", "Avatar 3", ReleaseType.MOVIE),
+            ),
+            onReleaseClick = {},
+        )
     }
 }

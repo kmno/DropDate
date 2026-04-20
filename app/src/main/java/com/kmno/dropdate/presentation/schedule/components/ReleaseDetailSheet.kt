@@ -5,8 +5,8 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -50,7 +50,7 @@ import com.kmno.dropdate.ui.theme.AnimePurple
 import com.kmno.dropdate.ui.theme.Background
 import com.kmno.dropdate.ui.theme.MovieAmber
 import com.kmno.dropdate.ui.theme.ReleasedGreen
-import com.kmno.dropdate.ui.theme.SeriesBlue
+import com.kmno.dropdate.ui.theme.SeriesRed
 import com.kmno.dropdate.ui.theme.Surface
 import com.kmno.dropdate.ui.theme.TextPrimary
 import com.kmno.dropdate.ui.theme.TextSecondary
@@ -65,7 +65,7 @@ fun ReleaseDetailSheet(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val accentColor = when (release.type) {
         ReleaseType.MOVIE  -> MovieAmber
-        ReleaseType.SERIES -> SeriesBlue
+        ReleaseType.SERIES -> SeriesRed
         ReleaseType.ANIME  -> AnimePurple
     }
 
@@ -78,7 +78,9 @@ fun ReleaseDetailSheet(
         Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
 
             // Hero — blurred backdrop + poster
-            Box(modifier = Modifier.fillMaxWidth().height(220.dp)) {
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .height(220.dp)) {
                 // Backdrop (blurred via heavy downscale)
                 AsyncImage(
                     model = release.backdropUrl ?: release.posterUrl,
@@ -124,10 +126,13 @@ fun ReleaseDetailSheet(
 
                 Spacer(Modifier.height(4.dp))
 
-                // Type · Year · Episode
+                // Type · Year · Episode · Genres
                 val metaRemainder = buildString {
                     release.airDate.year.let { append("$it") }
                     release.episodeLabel?.let { append(" · $it") }
+                    if (release.genres.isNotEmpty()) {
+                        append(" · ${release.genres.joinToString(", ")}")
+                    }
                 }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
@@ -145,8 +150,10 @@ fun ReleaseDetailSheet(
 
                 // Star rating
                 release.rating?.let { rating ->
-                    StarRating(rating = rating, accentColor = accentColor)
-                    Spacer(Modifier.height(6.dp))
+                    if (rating > 0) {
+                        StarRating(rating = rating, accentColor = accentColor)
+                        Spacer(Modifier.height(6.dp))
+                    }
                 }
 
                 // Platform dot
@@ -179,7 +186,12 @@ fun ReleaseDetailSheet(
                     contentAlignment = Alignment.Center,
                 ) {
                     if (release.status == ReleaseStatus.RELEASED) {
-                        Text("▶  Watch Now", color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                        Text(
+                            "▶  Already Dropped!",
+                            color = TextPrimary,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp
+                        )
                     } else {
                         CountdownText(airDate = release.airDate, airTime = release.airTime)
                     }

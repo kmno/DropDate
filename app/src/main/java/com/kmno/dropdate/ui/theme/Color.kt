@@ -8,8 +8,9 @@ val Surface     = Color(0xFF12121E)
 val SurfaceAlt  = Color(0xFF1A1A2E)
 
 // Content-type accents
+val All = Color(0xFF4A9EFF)
 val MovieAmber  = Color(0xFFF5A623)
-val SeriesBlue  = Color(0xFF4A9EFF)
+val SeriesRed = Color(0xffff4a50)
 val AnimePurple = Color(0xFFC084FC)
 
 // Status

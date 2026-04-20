@@ -17,5 +17,6 @@ data class ReleaseEntity(
     val episodeLabel: String?,
     val rating: Float?,
     val synopsis: String?,
+    val genres: String? = null,
     val syncedAt: Long,
 )

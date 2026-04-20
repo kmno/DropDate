@@ -16,4 +16,5 @@ data class Release(
     val episodeLabel: String?,
     val rating: Float?,
     val synopsis: String?,
+    val genres: List<String> = emptyList(),
 )

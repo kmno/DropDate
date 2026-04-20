@@ -2,8 +2,9 @@ package com.kmno.dropdate.data.repository
 
 import com.kmno.dropdate.data.local.dao.ReleaseDao
 import com.kmno.dropdate.data.mapper.ReleaseMapper
-import com.kmno.dropdate.data.remote.animeschedule.AnimeScheduleApi
-import com.kmno.dropdate.data.remote.jikan.JikanApi
+import com.kmno.dropdate.data.remote.anilist.ANILIST_ANIME_QUERY
+import com.kmno.dropdate.data.remote.anilist.AniListApi
+import com.kmno.dropdate.data.remote.tmdb.TMDB_POPULAR_PROVIDERS
 import com.kmno.dropdate.data.remote.tmdb.TmdbApi
 import com.kmno.dropdate.data.remote.tvmaze.TvMazeApi
 import com.kmno.dropdate.domain.model.Release
@@ -20,37 +21,51 @@ class ReleaseRepositoryImpl @Inject constructor(
     private val dao: ReleaseDao,
     private val tmdbApi: TmdbApi,
     private val tvMazeApi: TvMazeApi,
-    private val jikanApi: JikanApi,
-    private val animeScheduleApi: AnimeScheduleApi,
+    private val aniListApi: AniListApi,
     private val mapper: ReleaseMapper,
 ) : ReleaseRepository {
 
     override fun getReleasesForWeek(
         weekStart: LocalDate,
         weekEnd: LocalDate,
-    ): Flow<List<Release>> =
-        dao.observeByWeek(weekStart.toString(), weekEnd.toString())
-            .map { entities -> entities.map(mapper::toDomain) }
+    ): Flow<List<Release>> = dao.observeByWeek(weekStart.toString(), weekEnd.toString())
+        .map { entities ->
+            entities.map(mapper::toDomain)
+        }
 
     override suspend fun syncReleases(
         weekStart: LocalDate,
         weekEnd: LocalDate,
     ): Result<Unit> = runCatching {
         coroutineScope {
-            val upcoming      = async { tmdbApi.getUpcomingMovies() }
-            val popular       = async { tmdbApi.getPopularMovies() }
-            val streaming     = async { tvMazeApi.getStreamingSchedule(weekStart.toString()) }
-            val broadcast     = async { tvMazeApi.getBroadcastSchedule(weekStart.toString()) }
-            val airingAnime   = async { jikanApi.getCurrentlyAiringAnime() }
-            val upcomingAnime = async { jikanApi.getUpcomingAnime() }
-            val timetable     = async { animeScheduleApi.getTimetable() }
+            // Fire independent network calls simultaneously
+            val movies = async {
+                tmdbApi.discoverMovies(
+                    startDate = weekStart.toString(),
+                    endDate = weekEnd.toString(),
+                )
+            }
+            val tvShows = async {
+                tmdbApi.discoverTv(
+                    startDate = weekStart.toString(),
+                    endDate = weekEnd.toString(),
+                    watchProviders = TMDB_POPULAR_PROVIDERS
+                )
+            }
+            val tvMazeUS = async { tvMazeApi.getStreamingSchedule(weekStart.toString()) }
+            val anime = async { aniListApi.getAnimeSchedule(ANILIST_ANIME_QUERY) }
 
             val entities = buildList {
-                addAll(mapper.fromTmdb(upcoming.await(), popular.await()))
-                addAll(mapper.fromTvMaze(streaming.await(), broadcast.await()))
-                addAll(mapper.fromJikan(airingAnime.await(), upcomingAnime.await(), timetable.await()))
+                addAll(
+                    mapper.fromTmdb(
+                        movies.await(),
+                        tvShows.await(),
+                    )
+                )
+                addAll(mapper.fromTvMaze(tvMazeUS.await()))
+                addAll(mapper.fromAniList(anime.await()))
             }
-
+            println("$$$$$$$$$$$$$$$$$$$$$ Received entities: ${entities.size}")
             dao.upsertAll(entities)
             dao.deleteStale(System.currentTimeMillis() - 7.days.inWholeMilliseconds)
         }

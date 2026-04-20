@@ -5,6 +5,7 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,15 +23,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.kmno.dropdate.presentation.schedule.ContentFilter
+import com.kmno.dropdate.ui.theme.All
 import com.kmno.dropdate.ui.theme.AnimePurple
+import com.kmno.dropdate.ui.theme.DropDateTheme
 import com.kmno.dropdate.ui.theme.MovieAmber
-import com.kmno.dropdate.ui.theme.SeriesBlue
-import com.kmno.dropdate.ui.theme.TextPrimary
+import com.kmno.dropdate.ui.theme.SeriesRed
 import com.kmno.dropdate.ui.theme.TextSecondary
 
 private val filters = listOf(
@@ -48,9 +52,9 @@ private fun ContentFilter.label() = when (this) {
 }
 
 private fun ContentFilter.accentColor() = when (this) {
-    ContentFilter.ALL    -> SeriesBlue
+    ContentFilter.ALL -> All
     ContentFilter.MOVIES -> MovieAmber
-    ContentFilter.SERIES -> SeriesBlue
+    ContentFilter.SERIES -> SeriesRed
     ContentFilter.ANIME  -> AnimePurple
 }
 
@@ -69,10 +73,11 @@ fun ContentTypeChips(
     )
 
     val chipWidths = remember { mutableStateListOf(*Array(filters.size) { 0f }) }
+    val chipOffsets = remember { mutableStateListOf(*Array(filters.size) { 0f }) }
 
     val density = LocalDensity.current
     val offsetDp by animateDpAsState(
-        targetValue = with(density) { chipWidths.take(selectedIndex).sum().toDp() },
+        targetValue = with(density) { chipOffsets.getOrElse(selectedIndex) { 0f }.toDp() },
         animationSpec = tween(200),
         label = "chipIndicatorOffset",
     )
@@ -82,31 +87,9 @@ fun ContentTypeChips(
         label = "chipIndicatorWidth",
     )
 
-    Box(modifier = modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
-        Row(modifier = Modifier.fillMaxWidth()) {
-            filters.forEachIndexed { i, filter ->
-                val isActive = filter == activeFilter
-                val textColor by animateColorAsState(
-                    targetValue = if (isActive) accentColor else TextSecondary,
-                    animationSpec = tween(200),
-                    label = "chipColor_$i",
-                )
-                Text(
-                    text = filter.label(),
-                    fontSize = 13.sp,
-                    fontWeight = if (isActive) FontWeight.SemiBold else FontWeight.Normal,
-                    color = textColor,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .clickable { onFilterSelected(filter) }
-                        .padding(horizontal = 12.dp, vertical = 8.dp)
-                        .onGloballyPositioned { coords ->
-                            chipWidths[i] = coords.size.width.toFloat()
-                        },
-                )
-            }
-        }
-
+    Box(modifier = modifier
+        .fillMaxWidth()
+        .padding(horizontal = 16.dp)) {
         // Sliding underline indicator
         Box(
             modifier = Modifier
@@ -116,5 +99,56 @@ fun ContentTypeChips(
                 .height(2.dp)
                 .background(animatedAccentColor, RoundedCornerShape(1.dp))
         )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            filters.forEachIndexed { i, filter ->
+                val isActive = filter == activeFilter
+                val textColor by animateColorAsState(
+                    targetValue = if (isActive) animatedAccentColor else TextSecondary,
+                    animationSpec = tween(200),
+                    label = "chipColor_$i",
+                )
+                Box(
+                    modifier = Modifier
+                        .onGloballyPositioned { coords ->
+                            chipWidths[i] = coords.size.width.toFloat()
+                            chipOffsets[i] = coords.positionInParent().x
+                        }
+                        .clip(RoundedCornerShape(4.dp))
+                        .clickable { onFilterSelected(filter) }
+                        .padding(horizontal = 12.dp, vertical = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = filter.label(),
+                        fontSize = 13.sp,
+                        fontWeight = if (isActive) FontWeight.SemiBold else FontWeight.Normal,
+                        color = textColor
+                    )
+                }
+            }
+        }
     }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF080810, widthDp = 360)
+@Composable
+private fun ContentTypeChipsAllPreview() {
+    DropDateTheme { ContentTypeChips(activeFilter = ContentFilter.ALL, onFilterSelected = {}) }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF080810, widthDp = 360)
+@Composable
+private fun ContentTypeChipsMoviesPreview() {
+    DropDateTheme { ContentTypeChips(activeFilter = ContentFilter.MOVIES, onFilterSelected = {}) }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF080810, widthDp = 360)
+@Composable
+private fun ContentTypeChipsAnimePreview() {
+    DropDateTheme { ContentTypeChips(activeFilter = ContentFilter.ANIME, onFilterSelected = {}) }
 }

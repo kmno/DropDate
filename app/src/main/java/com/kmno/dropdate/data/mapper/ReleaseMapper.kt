@@ -1,125 +1,280 @@
 package com.kmno.dropdate.data.mapper
 
+// import com.kmno.dropdate.data.remote.trakt.TraktAnticipatedMovieDto
+// import com.kmno.dropdate.data.remote.trakt.TraktAnticipatedShowDto
 import com.kmno.dropdate.data.local.entity.ReleaseEntity
-import com.kmno.dropdate.data.remote.animeschedule.AnimeScheduleEntryDto
-import com.kmno.dropdate.data.remote.jikan.JikanAnimeDto
-import com.kmno.dropdate.data.remote.jikan.JikanSeasonDto
+import com.kmno.dropdate.data.remote.anilist.AniListMedia
+import com.kmno.dropdate.data.remote.anilist.AniListResponse
 import com.kmno.dropdate.data.remote.tmdb.TmdbMovieListDto
+import com.kmno.dropdate.data.remote.tmdb.TmdbTvListDto
 import com.kmno.dropdate.data.remote.tvmaze.TvMazeScheduleEntryDto
 import com.kmno.dropdate.domain.model.Release
 import com.kmno.dropdate.domain.model.ReleaseStatus
 import com.kmno.dropdate.domain.model.ReleaseType
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZoneOffset
 import java.time.format.DateTimeParseException
 import javax.inject.Inject
 
 private const val TMDB_IMAGE_BASE = "https://image.tmdb.org/t/p/"
 private const val TMDB_POSTER_SIZE = "w500"
 private const val TMDB_BACKDROP_SIZE = "original"
-private const val ANIME_SCHEDULE_IMAGE_BASE = "https://animeschedule.net/img/shows/"
+
+private val TMDB_MOVIE_GENRES = mapOf(
+    28 to "Action", 12 to "Adventure", 16 to "Animation", 35 to "Comedy", 80 to "Crime",
+    99 to "Documentary", 18 to "Drama", 10751 to "Family", 14 to "Fantasy", 36 to "History",
+    27 to "Horror", 10402 to "Music", 9648 to "Mystery", 10749 to "Romance", 878 to "Sci-Fi",
+    10770 to "TV Movie", 53 to "Thriller", 10752 to "War", 37 to "Western"
+)
+private val TMDB_TV_GENRES = mapOf(
+    10759 to "Action & Adventure", 16 to "Animation", 35 to "Comedy", 80 to "Crime",
+    99 to "Documentary", 18 to "Drama", 10751 to "Family", 10762 to "Kids", 9648 to "Mystery",
+    10763 to "News", 10764 to "Reality", 10765 to "Sci-Fi & Fantasy", 10766 to "Soap",
+    10767 to "Talk", 10768 to "War & Politics", 37 to "Western"
+)
+
+private val POPULAR_PLATFORMS = setOf(
+    "netflix", "hbo", "max", "hulu", "amazon", "prime",
+    "disney", "apple", "peacock", "paramount"
+)
+
+private fun String.isPopularStreamer() =
+    lowercase().let { l -> POPULAR_PLATFORMS.any { l.contains(it) } }
+
+private fun String.isEnglish() = lowercase().let { it == "english" }
+private fun String.isScripted() = lowercase() == "scripted"
 
 class ReleaseMapper @Inject constructor() {
 
-    fun fromTmdb(upcoming: TmdbMovieListDto, popular: TmdbMovieListDto): List<ReleaseEntity> {
-        val seen = mutableSetOf<Int>()
+    // ── Movies (TMDB) ────────────────────────────────────────────────────────
+
+    fun fromTmdb(
+        movies: TmdbMovieListDto,
+        tvShows: TmdbTvListDto,
+    ): List<ReleaseEntity> {
+        val seen = mutableSetOf<String>()
         val now = System.currentTimeMillis()
-        return (upcoming.results + popular.results)
-            .filter { it.id !in seen && seen.add(it.id) }
+
+        val movieEntities = movies.results
+            .filter { "tmdb_m_${it.id}" !in seen && seen.add("tmdb_m_${it.id}") }
             .mapNotNull { dto ->
                 val dateStr = dto.releaseDate?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
                 val date = parseLocalDate(dateStr) ?: return@mapNotNull null
                 ReleaseEntity(
-                    id = "tmdb_${dto.id}",
+                    id = "tmdb_m_${dto.id}",
                     title = dto.title,
                     posterUrl = dto.posterPath?.let { "$TMDB_IMAGE_BASE$TMDB_POSTER_SIZE$it" },
                     backdropUrl = dto.backdropPath?.let { "$TMDB_IMAGE_BASE$TMDB_BACKDROP_SIZE$it" },
                     type = ReleaseType.MOVIE.name,
-                    status = if (date.isAfter(LocalDate.now())) ReleaseStatus.UPCOMING.name else ReleaseStatus.RELEASED.name,
+                    status = releaseStatus(date),
                     airDate = dateStr,
                     airTime = null,
                     platform = null,
                     episodeLabel = null,
                     rating = dto.voteAverage,
                     synopsis = dto.overview,
+                    genres = dto.genreIds.mapNotNull { TMDB_MOVIE_GENRES[it] }.joinToString(",")
+                        .takeIf { it.isNotBlank() },
                     syncedAt = now,
                 )
             }
+
+        val tvEntities = tvShows.results
+            .filter { "tmdb_t_${it.id}" !in seen && seen.add("tmdb_t_${it.id}") }
+            .mapNotNull { dto ->
+                println("$$$$$$$$$$$$$$$$$$$$ ${dto.name} ${dto.firstAirDate} ")
+                val dateStr = dto.firstAirDate?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+                val date = parseLocalDate(dateStr) ?: return@mapNotNull null
+                ReleaseEntity(
+                    id = "tmdb_t_${dto.id}",
+                    title = dto.name,
+                    posterUrl = dto.posterPath?.let { "$TMDB_IMAGE_BASE$TMDB_POSTER_SIZE$it" },
+                    backdropUrl = dto.backdropPath?.let { "$TMDB_IMAGE_BASE$TMDB_BACKDROP_SIZE$it" },
+                    type = ReleaseType.SERIES.name,
+                    status = releaseStatus(date),
+                    airDate = dateStr,
+                    airTime = null,
+                    platform = null,
+                    episodeLabel = null,
+                    rating = dto.voteAverage,
+                    synopsis = dto.overview,
+                    genres = dto.genreIds.mapNotNull { TMDB_TV_GENRES[it] }.joinToString(",")
+                        .takeIf { it.isNotBlank() },
+                    syncedAt = now,
+                )
+            }
+
+        println("$$$$$$$$$$$$$$$$$$$$ ${movieEntities + tvEntities}")
+
+        return movieEntities + tvEntities
     }
 
-    fun fromTvMaze(
-        streaming: List<TvMazeScheduleEntryDto>,
-        broadcast: List<TvMazeScheduleEntryDto>,
-    ): List<ReleaseEntity> {
-        val seen = mutableSetOf<String>()
+    // ── TV Series (TVMaze) ──────────────────────────────────────────────────
+
+    fun fromTvMaze(entries: List<TvMazeScheduleEntryDto>): List<ReleaseEntity> {
         val now = System.currentTimeMillis()
-        return (streaming + broadcast)
+        val seen = mutableSetOf<String>()
+        return entries
+            .filter { entry ->
+                val show = entry.show ?: return@filter false
+                val isPopular = (show.network?.name?.isPopularStreamer() == true ||
+                        show.webChannel?.name?.isPopularStreamer() == true)
+
+                val isEnglish = show.language?.isEnglish() == true
+                val isScripted = show.type.isScripted()
+
+                isPopular && isEnglish && isScripted
+            }
             .mapNotNull { entry ->
+                // println("$$$$$$$$$$$$$ entry: ${entry}")
                 val show = entry.show ?: return@mapNotNull null
-                val dateStr = entry.airdate?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+                val id = "tvmaze_${show.id}"
+                if (id in seen) return@mapNotNull null
+                seen.add(id)
+
+                val dateStr = entry.airdate ?: return@mapNotNull null
                 val date = parseLocalDate(dateStr) ?: return@mapNotNull null
-                val epLabel = entry.season?.let { s -> entry.number?.let { e -> "S%02dE%02d".format(s, e) } }
-                val id = "tvmaze_${show.id}_${epLabel ?: dateStr}"
-                if (id in seen || !seen.add(id)) return@mapNotNull null
-                val platform = (show.webChannel ?: show.network)?.name
+
+                val epLabel = if (entry.season != null && entry.number != null) {
+                    "S%02dE%02d".format(entry.season, entry.number)
+                } else null
+
                 ReleaseEntity(
                     id = id,
                     title = show.name,
-                    posterUrl = show.image?.medium,
-                    backdropUrl = show.image?.original,
+                    posterUrl = show.image?.original ?: show.image?.medium,
+                    backdropUrl = show.image?.original ?: show.image?.medium,
                     type = ReleaseType.SERIES.name,
-                    status = if (date.isAfter(LocalDate.now())) ReleaseStatus.UPCOMING.name else ReleaseStatus.RELEASED.name,
+                    status = releaseStatus(date),
                     airDate = dateStr,
-                    airTime = entry.airtime?.takeIf { it.isNotBlank() },
-                    platform = platform,
+                    airTime = entry.airtime,
+                    platform = show.network?.name ?: show.webChannel?.name,
                     episodeLabel = epLabel,
-                    rating = show.rating?.average,
+                    rating = show.rating?.average?.let { it * 1f },
                     synopsis = show.summary?.replace(Regex("<.*?>"), ""),
+                    genres = show.genres.joinToString(",").takeIf { it.isNotBlank() },
                     syncedAt = now,
                 )
             }
     }
 
-    fun fromJikan(
-        airing: JikanSeasonDto,
-        upcoming: JikanSeasonDto,
-        timetable: List<AnimeScheduleEntryDto>,
-    ): List<ReleaseEntity> {
-        val timetableMap = timetable.associateBy { it.route }
+    /*
+        // ── Anticipated (Trakt + TMDB images) ───────────────────────────────────
+        // Images are fetched by the repository using TMDB IDs from Trakt IDs,
+        // then passed here as maps to avoid N+1 API calls in the mapper.
+
+        fun fromTrakt(
+            movies: List<TraktAnticipatedMovieDto>,
+            shows: List<TraktAnticipatedShowDto>,
+            movieImages: Map<Int, TmdbImagesDto>,
+            showImages: Map<Int, TmdbImagesDto>,
+        ): List<ReleaseEntity> {
+            val now = System.currentTimeMillis()
+            val movieEntities = movies.mapNotNull { item ->
+                val movie = item.movie ?: return@mapNotNull null
+                val traktId = movie.ids?.trakt ?: return@mapNotNull null
+                val dateStr = movie.released?.take(10)?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+                val date = parseLocalDate(dateStr) ?: return@mapNotNull null
+                val images = movieImages[movie.ids.tmdb]
+                ReleaseEntity(
+                    id = "trakt_m_$traktId",
+                    title = movie.title,
+                    posterUrl = images?.posterPath?.let { "$TMDB_IMAGE_BASE$TMDB_POSTER_SIZE$it" },
+                    backdropUrl = images?.backdropPath?.let { "$TMDB_IMAGE_BASE$TMDB_BACKDROP_SIZE$it" },
+                    type = ReleaseType.MOVIE.name,
+                    status = releaseStatus(date),
+                    airDate = dateStr,
+                    airTime = null,
+                    platform = null,
+                    episodeLabel = null,
+                    rating = movie.rating,
+                    synopsis = movie.overview,
+                    syncedAt = now,
+                )
+            }
+            val showEntities = shows.mapNotNull { item ->
+                val show = item.show ?: return@mapNotNull null
+                val traktId = show.ids?.trakt ?: return@mapNotNull null
+                val dateStr = show.firstAired?.take(10)?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+                val date = parseLocalDate(dateStr) ?: return@mapNotNull null
+                val images = showImages[show.ids.tmdb]
+                ReleaseEntity(
+                    id = "trakt_s_$traktId",
+                    title = show.title,
+                    posterUrl = images?.posterPath?.let { "$TMDB_IMAGE_BASE$TMDB_POSTER_SIZE$it" },
+                    backdropUrl = images?.backdropPath?.let { "$TMDB_IMAGE_BASE$TMDB_BACKDROP_SIZE$it" },
+                    type = ReleaseType.SERIES.name,
+                    status = releaseStatus(date),
+                    airDate = dateStr,
+                    airTime = null,
+                    platform = null,
+                    episodeLabel = null,
+                    rating = show.rating,
+                    synopsis = show.overview,
+                    syncedAt = now,
+                )
+            }
+            return movieEntities + showEntities
+        }
+    */
+
+    // ── Anime (AniList) ──────────────────────────────────────────────────────
+
+    fun fromAniList(response: AniListResponse): List<ReleaseEntity> {
         val seen = mutableSetOf<Int>()
         val now = System.currentTimeMillis()
-        return (airing.data + upcoming.data)
-            .filter { it.malId !in seen && seen.add(it.malId) }
-            .mapNotNull { anime -> mapJikanAnime(anime, timetableMap, now) }
+        val releasing = response.data?.releasing?.media ?: emptyList()
+        val upcoming = response.data?.upcoming?.media ?: emptyList()
+        return (releasing + upcoming)
+            .filter { it.id !in seen && seen.add(it.id) }
+            .mapNotNull { media -> mapAniListMedia(media, now) }
     }
 
-    private fun mapJikanAnime(
-        anime: JikanAnimeDto,
-        timetableMap: Map<String, AnimeScheduleEntryDto>,
-        now: Long,
-    ): ReleaseEntity? {
-        val dateStr = anime.aired?.from?.take(10)?.takeIf { it.isNotBlank() } ?: return null
-        val date = parseLocalDate(dateStr) ?: return null
-        val schedule = timetableMap.values.find { it.title.equals(anime.title, ignoreCase = true) }
-        val platform = schedule?.streams?.firstOrNull()?.name
-        val airTime = schedule?.episodeTime?.takeIf { it.isNotBlank() }
-            ?: anime.broadcast?.time?.takeIf { it.isNotBlank() }
+    private fun mapAniListMedia(media: AniListMedia, now: Long): ReleaseEntity? {
+        val today = LocalDate.now()
+        val (dateStr, status) = when {
+            media.nextAiringEpisode != null -> {
+                val date = Instant.ofEpochSecond(media.nextAiringEpisode.airingAt)
+                    .atZone(ZoneOffset.UTC).toLocalDate()
+                date.toString() to if (date.isAfter(today)) ReleaseStatus.UPCOMING else ReleaseStatus.RELEASED
+            }
+
+            media.startDate != null -> {
+                val y = media.startDate.year ?: return null
+                val m = (media.startDate.month ?: 1).coerceIn(1, 12)
+                val d = (media.startDate.day ?: 1).coerceIn(1, 28)
+                val date = runCatching { LocalDate.of(y, m, d) }.getOrNull() ?: return null
+                date.toString() to if (date.isAfter(today)) ReleaseStatus.UPCOMING else ReleaseStatus.RELEASED
+            }
+
+            else -> return null
+        }
+        val title = media.title?.english?.takeIf { it.isNotBlank() }
+            ?: media.title?.romaji
+            ?: return null
+        val platform =
+            media.externalLinks.firstOrNull { it.site?.isPopularStreamer() == true }?.site
         return ReleaseEntity(
-            id = "jikan_${anime.malId}",
-            title = anime.title,
-            posterUrl = anime.images?.jpg?.largeImageUrl,
-            backdropUrl = schedule?.imageRoute?.let { "$ANIME_SCHEDULE_IMAGE_BASE$it" },
+            id = "anilist_${media.id}",
+            title = title,
+            posterUrl = media.coverImage?.large,
+            backdropUrl = media.coverImage?.large,
             type = ReleaseType.ANIME.name,
-            status = if (date.isAfter(LocalDate.now())) ReleaseStatus.UPCOMING.name else ReleaseStatus.RELEASED.name,
+            status = status.name,
             airDate = dateStr,
-            airTime = airTime,
+            airTime = null,
             platform = platform,
-            episodeLabel = null,
-            rating = anime.score,
-            synopsis = anime.synopsis,
+            episodeLabel = media.nextAiringEpisode?.episode?.let { "Ep $it" },
+            rating = media.averageScore?.let { it / 10f },
+            synopsis = media.description?.replace(Regex("<.*?>"), ""),
+            genres = media.genres.joinToString(",").takeIf { it.isNotBlank() },
             syncedAt = now,
         )
     }
+
+    // ── Domain mapping ───────────────────────────────────────────────────────
 
     fun toDomain(entity: ReleaseEntity): Release = Release(
         id = entity.id,
@@ -134,11 +289,17 @@ class ReleaseMapper @Inject constructor() {
         episodeLabel = entity.episodeLabel,
         rating = entity.rating,
         synopsis = entity.synopsis,
+        genres = entity.genres?.split(",")?.filter { it.isNotBlank() } ?: emptyList(),
     )
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    private fun releaseStatus(date: LocalDate) =
+        if (date.isAfter(LocalDate.now())) ReleaseStatus.UPCOMING.name else ReleaseStatus.RELEASED.name
 
     private fun parseLocalDate(value: String): LocalDate? = try {
         LocalDate.parse(value.take(10))
-    } catch (e: DateTimeParseException) {
+    } catch (_: DateTimeParseException) {
         null
     }
 }

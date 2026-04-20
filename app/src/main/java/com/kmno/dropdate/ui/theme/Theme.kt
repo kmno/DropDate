@@ -5,7 +5,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 
 private val DropDateColorScheme = darkColorScheme(
-    primary         = SeriesBlue,
+    primary = SeriesRed,
     secondary       = MovieAmber,
     tertiary        = AnimePurple,
     background      = Background,
