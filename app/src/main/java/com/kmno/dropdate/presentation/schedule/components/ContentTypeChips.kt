@@ -37,26 +37,29 @@ import com.kmno.dropdate.ui.theme.MovieAmber
 import com.kmno.dropdate.ui.theme.SeriesRed
 import com.kmno.dropdate.ui.theme.TextSecondary
 
-private val filters = listOf(
-    ContentFilter.ALL,
-    ContentFilter.MOVIES,
-    ContentFilter.SERIES,
-    ContentFilter.ANIME,
-)
+private val filters =
+    listOf(
+        ContentFilter.ALL,
+        ContentFilter.MOVIES,
+        ContentFilter.SERIES,
+        ContentFilter.ANIME,
+    )
 
-private fun ContentFilter.label() = when (this) {
-    ContentFilter.ALL    -> "All"
-    ContentFilter.MOVIES -> "Movies"
-    ContentFilter.SERIES -> "Series"
-    ContentFilter.ANIME  -> "Anime"
-}
+private fun ContentFilter.label() =
+    when (this) {
+        ContentFilter.ALL -> "All"
+        ContentFilter.MOVIES -> "Movies"
+        ContentFilter.SERIES -> "Series"
+        ContentFilter.ANIME -> "Anime"
+    }
 
-private fun ContentFilter.accentColor() = when (this) {
-    ContentFilter.ALL -> All
-    ContentFilter.MOVIES -> MovieAmber
-    ContentFilter.SERIES -> SeriesRed
-    ContentFilter.ANIME  -> AnimePurple
-}
+private fun ContentFilter.accentColor() =
+    when (this) {
+        ContentFilter.ALL -> All
+        ContentFilter.MOVIES -> MovieAmber
+        ContentFilter.SERIES -> SeriesRed
+        ContentFilter.ANIME -> AnimePurple
+    }
 
 @Composable
 fun ContentTypeChips(
@@ -87,23 +90,27 @@ fun ContentTypeChips(
         label = "chipIndicatorWidth",
     )
 
-    Box(modifier = modifier
-        .fillMaxWidth()
-        .padding(horizontal = 16.dp)) {
+    Box(
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+    ) {
         // Sliding underline indicator
         Box(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .offset(x = offsetDp)
-                .width(indicatorWidthDp)
-                .height(2.dp)
-                .background(animatedAccentColor, RoundedCornerShape(1.dp))
+            modifier =
+                Modifier
+                    .align(Alignment.BottomStart)
+                    .offset(x = offsetDp)
+                    .width(indicatorWidthDp)
+                    .height(2.dp)
+                    .background(animatedAccentColor, RoundedCornerShape(1.dp)),
         )
 
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             filters.forEachIndexed { i, filter ->
                 val isActive = filter == activeFilter
@@ -113,21 +120,22 @@ fun ContentTypeChips(
                     label = "chipColor_$i",
                 )
                 Box(
-                    modifier = Modifier
-                        .onGloballyPositioned { coords ->
-                            chipWidths[i] = coords.size.width.toFloat()
-                            chipOffsets[i] = coords.positionInParent().x
-                        }
-                        .clip(RoundedCornerShape(4.dp))
-                        .clickable { onFilterSelected(filter) }
-                        .padding(horizontal = 12.dp, vertical = 12.dp),
-                    contentAlignment = Alignment.Center
+                    modifier =
+                        Modifier
+                            .onGloballyPositioned { coords ->
+                                chipWidths[i] = coords.size.width.toFloat()
+                                chipOffsets[i] = coords.positionInParent().x
+                            }
+                            .clip(RoundedCornerShape(4.dp))
+                            .clickable { onFilterSelected(filter) }
+                            .padding(horizontal = 12.dp, vertical = 12.dp),
+                    contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = filter.label(),
                         fontSize = 13.sp,
                         fontWeight = if (isActive) FontWeight.SemiBold else FontWeight.Normal,
-                        color = textColor
+                        color = textColor,
                     )
                 }
             }

@@ -8,7 +8,7 @@ private const val API_KEY = "8d1d75d45d64e354b12b88ad332d01fe"
 
 /**
  * Common Provider IDs for US:
- * Netflix (8), Hulu (15), Disney+ (337), Amazon Prime (119), Apple TV+ (350), 
+ * Netflix (8), Hulu (15), Disney+ (337), Amazon Prime (119), Apple TV+ (350),
  * Max (1899), Peacock (386), Paramount+ (531), Crunchyroll (283)
  */
 const val TMDB_POPULAR_PROVIDERS = "8|15|337|119|350|1899|386|531|283"

@@ -62,17 +62,19 @@ fun ReleaseSection(
             enter = fadeIn() + expandVertically(),
         ) {
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 // Colored dot
                 Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .clip(CircleShape)
-                        .background(accentColor)
+                    modifier =
+                        Modifier
+                            .size(8.dp)
+                            .clip(CircleShape)
+                            .background(accentColor),
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
@@ -91,7 +93,7 @@ fun ReleaseSection(
                     text = "(${releases.size})",
                     fontSize = 12.sp,
                     color = TextSecondary.copy(alpha = 0.6f),
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -100,10 +102,11 @@ fun ReleaseSection(
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     contentDescription = "More $title",
-                    modifier = Modifier
-                        .size(20.dp)
-                        .clickable { onMoreClick() },
-                    tint = TextSecondary
+                    modifier =
+                        Modifier
+                            .size(20.dp)
+                            .clickable { onMoreClick() },
+                    tint = TextSecondary,
                 )
             }
         }
@@ -127,15 +130,28 @@ private fun fakeRelease(
     id: String,
     title: String,
     type: ReleaseType,
-    status: ReleaseStatus = ReleaseStatus.UPCOMING
-) =
-    Release(
-        id = id, title = title, posterUrl = null, backdropUrl = null,
-        type = type, status = status,
-        airDate = if (status == ReleaseStatus.UPCOMING) LocalDate.now()
-            .plusDays(5) else LocalDate.now().minusDays(1),
-        airTime = null, platform = null, episodeLabel = null, rating = 7.8f, synopsis = null,
-    )
+    status: ReleaseStatus = ReleaseStatus.UPCOMING,
+) = Release(
+    id = id,
+    title = title,
+    posterUrl = null,
+    backdropUrl = null,
+    type = type,
+    status = status,
+    airDate =
+        if (status == ReleaseStatus.UPCOMING) {
+            LocalDate
+                .now()
+                .plusDays(5)
+        } else {
+            LocalDate.now().minusDays(1)
+        },
+    airTime = null,
+    platform = null,
+    episodeLabel = null,
+    rating = 7.8f,
+    synopsis = null,
+)
 
 @Preview(showBackground = true, backgroundColor = 0xFF080810, widthDp = 360)
 @Composable
@@ -144,16 +160,17 @@ private fun ReleaseSectionMoviesPreview() {
         ReleaseSection(
             title = "Movies",
             accentColor = MovieAmber,
-            releases = listOf(
-                fakeRelease("1", "Dune: Part Three", ReleaseType.MOVIE),
-                fakeRelease(
-                    "2",
-                    "Mission: Impossible 8",
-                    ReleaseType.MOVIE,
-                    ReleaseStatus.RELEASED
+            releases =
+                listOf(
+                    fakeRelease("1", "Dune: Part Three", ReleaseType.MOVIE),
+                    fakeRelease(
+                        "2",
+                        "Mission: Impossible 8",
+                        ReleaseType.MOVIE,
+                        ReleaseStatus.RELEASED,
+                    ),
+                    fakeRelease("3", "Avatar 3", ReleaseType.MOVIE),
                 ),
-                fakeRelease("3", "Avatar 3", ReleaseType.MOVIE),
-            ),
             onReleaseClick = {},
             onMoreClick = {},
         )

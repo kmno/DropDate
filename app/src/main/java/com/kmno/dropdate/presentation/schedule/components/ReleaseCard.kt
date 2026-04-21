@@ -56,89 +56,94 @@ import kotlinx.coroutines.delay
 import java.time.LocalDate
 import com.kmno.dropdate.ui.theme.Surface as ThemeSurface
 
-private val CardWidth  = 140.dp
+private val CardWidth = 140.dp
 private val CardHeight = 210.dp
 
 object PlatformBranding {
-    fun getColor(name: String): Color = when {
-        name.contains("netflix", true) -> Color(0xFFE50914)
-        name.contains("disney", true) -> Color(0xFF113CCF)
-        name.contains("max", true) -> Color(0xFF0047FF)
-        name.contains("prime", true) || name.contains("amazon", true) -> Color(0xFF00A8E1)
-        name.contains("hulu", true) -> Color(0xFF1CE783)
-        name.contains("apple", true) -> Color(0xFF555555)
-        name.contains("peacock", true) -> Color(0xFF0F6CBD)
-        name.contains("paramount", true) -> Color(0xFF0064FF)
-        name.contains("crunchyroll", true) -> Color(0xFFF47521)
-        name.contains("funimation", true) -> Color(0xFF7700BA)
-        name.contains("amc", true) -> Color(0xFF2B2B2B)
-        name.contains("mgm", true) -> Color(0xFF8B7536)
-        name.contains("showtime", true) -> Color(0xFFCC0000)
-        name.contains("showmax", true) -> Color(0xFF00D4FF)
-        name.contains("fx", true) -> Color(0xFF000000)
-        else -> Color(0xFF6B6B85)
-    }
+    fun getColor(name: String): Color =
+        when {
+            name.contains("netflix", true) -> Color(0xFFE50914)
+            name.contains("disney", true) -> Color(0xFF113CCF)
+            name.contains("max", true) -> Color(0xFF0047FF)
+            name.contains("prime", true) || name.contains("amazon", true) -> Color(0xFF00A8E1)
+            name.contains("hulu", true) -> Color(0xFF1CE783)
+            name.contains("apple", true) -> Color(0xFF555555)
+            name.contains("peacock", true) -> Color(0xFF0F6CBD)
+            name.contains("paramount", true) -> Color(0xFF0064FF)
+            name.contains("crunchyroll", true) -> Color(0xFFF47521)
+            name.contains("funimation", true) -> Color(0xFF7700BA)
+            name.contains("amc", true) -> Color(0xFF2B2B2B)
+            name.contains("mgm", true) -> Color(0xFF8B7536)
+            name.contains("showtime", true) -> Color(0xFFCC0000)
+            name.contains("showmax", true) -> Color(0xFF00D4FF)
+            name.contains("fx", true) -> Color(0xFF000000)
+            else -> Color(0xFF6B6B85)
+        }
 
-    fun getDisplayName(name: String): String = when {
-        name.contains("netflix", true) -> "Netflix"
-        name.contains("disney", true) -> "Disney+"
-        name.contains("max", true) -> "HBO Max"
-        name.contains("prime", true) -> "Prime"
-        name.contains("amazon", true) -> "Prime"
-        name.contains("apple", true) -> "Apple TV+"
-        name.contains("paramount", true) -> "Paramount+"
-        name.contains("crunchyroll", true) -> "Crunchyroll"
-        name.contains("peacock", true) -> "peacock"
-        name.contains("hulu", true) -> "hulu"
-        name.contains("amc", true) -> "AMC+"
-        name.contains("mgm", true) -> "MGM+"
-        name.contains("showtime", true) -> "Showtime"
-        name.contains("showmax", true) -> "ShowMax"
-        name.contains("fx", true) -> "FX"
-        else -> name.take(8).uppercase()
-    }
+    fun getDisplayName(name: String): String =
+        when {
+            name.contains("netflix", true) -> "Netflix"
+            name.contains("disney", true) -> "Disney+"
+            name.contains("max", true) -> "HBO Max"
+            name.contains("prime", true) -> "Prime"
+            name.contains("amazon", true) -> "Prime"
+            name.contains("apple", true) -> "Apple TV+"
+            name.contains("paramount", true) -> "Paramount+"
+            name.contains("crunchyroll", true) -> "Crunchyroll"
+            name.contains("peacock", true) -> "peacock"
+            name.contains("hulu", true) -> "hulu"
+            name.contains("amc", true) -> "AMC+"
+            name.contains("mgm", true) -> "MGM+"
+            name.contains("showtime", true) -> "Showtime"
+            name.contains("showmax", true) -> "ShowMax"
+            name.contains("fx", true) -> "FX"
+            else -> name.take(8).uppercase()
+        }
 
-    fun getLogoUrl(name: String): String? = when {
-        name.contains(
-            "netflix",
-            true
-        ) -> "https://www.logo.wine/a/logo/Netflix/Netflix-Logo.wine.svg"
+    fun getLogoUrl(name: String): String? =
+        when {
+            name.contains(
+                "netflix",
+                true,
+            ) -> "https://www.logo.wine/a/logo/Netflix/Netflix-Logo.wine.svg"
 
-        name.contains(
-            "disney",
-            true
-        ) -> "https://www.logo.wine/a/logo/Disney%2B/Disney%2B-Logo.wine.svg"
+            name.contains(
+                "disney",
+                true,
+            ) -> "https://www.logo.wine/a/logo/Disney%2B/Disney%2B-Logo.wine.svg"
 
-        name.contains("hbo", true) || name.contains(
-            "hbo",
-            true
-        ) -> "https://www.logo.wine/a/logo/HBO_Max/HBO_Max-Logo.wine.svg"
+            name.contains("hbo", true) ||
+                    name.contains(
+                        "hbo",
+                        true,
+                    ) -> "https://www.logo.wine/a/logo/HBO_Max/HBO_Max-Logo.wine.svg"
 
-        name.contains("prime", true) || name.contains(
-            "amazon",
-            true
-        ) -> "https://www.logo.wine/a/logo/Amazon_Prime/Amazon_Prime-Logo.wine.svg"
+            name.contains("prime", true) ||
+                    name.contains(
+                        "amazon",
+                        true,
+                    ) -> "https://www.logo.wine/a/logo/Amazon_Prime/Amazon_Prime-Logo.wine.svg"
 
-        name.contains("hulu", true) -> "https://www.logo.wine/a/logo/Hulu/Hulu-Logo.wine.svg"
-        name.contains(
-            "apple",
-            true
-        ) -> "https://upload.wikimedia.org/wikipedia/commons/2/28/Apple_TV_Plus_Logo.svg"
+            name.contains("hulu", true) -> "https://www.logo.wine/a/logo/Hulu/Hulu-Logo.wine.svg"
+            name.contains(
+                "apple",
+                true,
+            ) -> "https://upload.wikimedia.org/wikipedia/commons/2/28/Apple_TV_Plus_Logo.svg"
 
-        name.contains(
-            "crunchy",
-            true
-        ) -> "https://www.logo.wine/a/logo/Crunchyroll/Crunchyroll-Logo.wine.svg"
+            name.contains(
+                "crunchy",
+                true,
+            ) -> "https://www.logo.wine/a/logo/Crunchyroll/Crunchyroll-Logo.wine.svg"
 
-        else -> null
-    }
+            else -> null
+        }
 }
 
 @Composable
 fun PlatformLogo(
     platform: String,
     modifier: Modifier = Modifier,
-    useActualLogo: Boolean = false
+    useActualLogo: Boolean = false,
 ) {
     val logoUrl = if (useActualLogo) PlatformBranding.getLogoUrl(platform) else null
     if (logoUrl != null) {
@@ -147,13 +152,13 @@ fun PlatformLogo(
             contentDescription = platform,
             modifier = modifier.height(16.dp),
             contentScale = ContentScale.Fit,
-            filterQuality = FilterQuality.High
+            filterQuality = FilterQuality.High,
         )
     } else {
         Surface(
             color = PlatformBranding.getColor(platform),
             shape = RoundedCornerShape(4.dp),
-            modifier = modifier
+            modifier = modifier,
         ) {
             Text(
                 text = PlatformBranding.getDisplayName(platform),
@@ -162,7 +167,7 @@ fun PlatformLogo(
                 fontWeight = FontWeight.Black,
                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
                 letterSpacing = 0.5.sp,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
         }
     }
@@ -193,25 +198,27 @@ fun ReleaseCard(
         visible = visible,
         enter = fadeIn() + slideInVertically { it / 2 },
     ) {
-        val accentColor = when (release.type) {
-            ReleaseType.MOVIE  -> MovieAmber
-            ReleaseType.SERIES -> SeriesRed
-            ReleaseType.ANIME  -> AnimePurple
-        }
+        val accentColor =
+            when (release.type) {
+                ReleaseType.MOVIE -> MovieAmber
+                ReleaseType.SERIES -> SeriesRed
+                ReleaseType.ANIME -> AnimePurple
+            }
 
         Box(
-            modifier = modifier
-                .width(CardWidth)
-                .height(CardHeight)
-                .scale(scale)
-                .clip(RoundedCornerShape(12.dp))
-                .background(ThemeSurface)
-                .border(0.5.dp, accentColor.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
-                .clickable(
-                    interactionSource = interactionSource,
-                    indication = null,
-                    onClick = { onClick(release) },
-                ),
+            modifier =
+                modifier
+                    .width(CardWidth)
+                    .height(CardHeight)
+                    .scale(scale)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(ThemeSurface)
+                    .border(0.5.dp, accentColor.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null,
+                        onClick = { onClick(release) },
+                    ),
         ) {
             // Poster image
             AsyncImage(
@@ -223,33 +230,36 @@ fun ReleaseCard(
 
             // Bottom gradient scrim
             Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        Brush.verticalGradient(
-                            0f to Color.Transparent,
-                            0.4f to Color.Transparent,
-                            1f to Background,
-                        )
-                    )
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .background(
+                            Brush.verticalGradient(
+                                0f to Color.Transparent,
+                                0.4f to Color.Transparent,
+                                1f to Background,
+                            ),
+                        ),
             )
 
             // Platform badge — top-right
             release.platform?.let { p ->
                 PlatformLogo(
                     platform = p,
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(6.dp)
+                    modifier =
+                        Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(6.dp),
                 )
             }
 
             // Content overlay
             Column(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .fillMaxWidth()
-                    .padding(8.dp),
+                modifier =
+                    Modifier
+                        .align(Alignment.BottomStart)
+                        .fillMaxWidth()
+                        .padding(8.dp),
             ) {
                 Text(
                     text = release.title,
@@ -283,7 +293,7 @@ fun ReleaseCard(
                     CountdownText(
                         airDate = release.airDate,
                         airTime = release.airTime,
-                        showDetails = false
+                        showDetails = false,
                     )
                 }
             }
@@ -305,8 +315,14 @@ private fun previewRelease(
     backdropUrl = null,
     type = type,
     status = status,
-    airDate = if (status == ReleaseStatus.UPCOMING) LocalDate.now()
-        .plusDays(14) else LocalDate.now().minusDays(2),
+    airDate =
+        if (status == ReleaseStatus.UPCOMING) {
+            LocalDate
+                .now()
+                .plusDays(14)
+        } else {
+            LocalDate.now().minusDays(2)
+        },
     airTime = null,
     platform = platform,
     episodeLabel = null,
@@ -319,11 +335,12 @@ private fun previewRelease(
 private fun ReleaseCardMovieUpcomingPreview() {
     DropDateTheme {
         ReleaseCard(
-            release = previewRelease(
-                title = "Dune: Part Three",
-                type = ReleaseType.MOVIE,
-                status = ReleaseStatus.UPCOMING
-            ),
+            release =
+                previewRelease(
+                    title = "Dune: Part Three",
+                    type = ReleaseType.MOVIE,
+                    status = ReleaseStatus.UPCOMING,
+                ),
             index = 0,
             onClick = {},
         )
@@ -335,13 +352,14 @@ private fun ReleaseCardMovieUpcomingPreview() {
 private fun ReleaseCardSeriesReleasedPreview() {
     DropDateTheme {
         ReleaseCard(
-            release = previewRelease(
-                id = "tvmaze_1",
-                title = "The Last of Us S02E05",
-                type = ReleaseType.SERIES,
-                status = ReleaseStatus.RELEASED,
-                platform = "HBO"
-            ),
+            release =
+                previewRelease(
+                    id = "tvmaze_1",
+                    title = "The Last of Us S02E05",
+                    type = ReleaseType.SERIES,
+                    status = ReleaseStatus.RELEASED,
+                    platform = "HBO",
+                ),
             index = 0,
             onClick = {},
         )
@@ -353,14 +371,15 @@ private fun ReleaseCardSeriesReleasedPreview() {
 private fun ReleaseCardAnimePreview() {
     DropDateTheme {
         ReleaseCard(
-            release = previewRelease(
-                id = "jikan_1",
-                title = "Solo Leveling Season 2",
-                type = ReleaseType.ANIME,
-                status = ReleaseStatus.UPCOMING,
-                rating = 9.1f,
-                platform = "Crunchyroll"
-            ),
+            release =
+                previewRelease(
+                    id = "jikan_1",
+                    title = "Solo Leveling Season 2",
+                    type = ReleaseType.ANIME,
+                    status = ReleaseStatus.UPCOMING,
+                    rating = 9.1f,
+                    platform = "Crunchyroll",
+                ),
             index = 1,
             onClick = {},
         )

@@ -49,20 +49,24 @@ fun CountdownText(
     modifier: Modifier = Modifier,
     showDetails: Boolean = true,
 ) {
-    val targetEpoch = remember(airDate, airTime) {
-        val time = airTime ?: LocalTime.of(23, 59, 59)
-        ZonedDateTime.of(airDate, time, ZoneId.systemDefault())
-            .toInstant().toEpochMilli()
-    }
+    val targetEpoch =
+        remember(airDate, airTime) {
+            val time = airTime ?: LocalTime.of(23, 59, 59)
+            ZonedDateTime
+                .of(airDate, time, ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli()
+        }
 
     var remainingMs by remember { mutableLongStateOf(targetEpoch - System.currentTimeMillis()) }
 
     LaunchedEffect(targetEpoch) {
         while (remainingMs > 0) {
-            val waitTime = when {
-                remainingMs > 3600_000 -> 60_000L // Update every minute if > 1h
-                else -> 1_000L // Update every second if < 1h
-            }
+            val waitTime =
+                when {
+                    remainingMs > 3600_000 -> 60_000L // Update every minute if > 1h
+                    else -> 1_000L // Update every second if < 1h
+                }
             delay(waitTime)
             remainingMs = targetEpoch - System.currentTimeMillis()
         }
@@ -73,44 +77,48 @@ fun CountdownText(
     val hours = ((totalSeconds % 86400) / 3600).toInt()
     val minutes = ((totalSeconds % 3600) / 60).toInt()
 
-    val labelText = when {
-        days > 1 -> "Drops in $days days"
-        days == 1 -> "Drops tomorrow"
-        hours > 0 -> "Drops in ${hours}h ${minutes}m"
-        minutes > 0 -> "Drops in ${minutes}m"
-        else -> "Drops in < 1m"
-    }
+    val labelText =
+        when {
+            days > 1 -> "Drops in $days days"
+            days == 1 -> "Drops tomorrow"
+            hours > 0 -> "Drops in ${hours}h ${minutes}m"
+            minutes > 0 -> "Drops in ${minutes}m"
+            else -> "Drops in < 1m"
+        }
 
     val dateFormatter = remember { DateTimeFormatter.ofPattern("MMM dd, yyyy") }
     val timeFormatter = remember { DateTimeFormatter.ofPattern("hh:mm a") }
-    val exactDateText = remember(airDate, airTime) {
-        val datePart = airDate.format(dateFormatter)
-        val timePart = "• ${airTime?.format(timeFormatter) ?: "Time TBD"}"
-        "$datePart $timePart"
-    }
+    val exactDateText =
+        remember(airDate, airTime) {
+            val datePart = airDate.format(dateFormatter)
+            val timePart = "• ${airTime?.format(timeFormatter) ?: "Time TBD"}"
+            "$datePart $timePart"
+        }
 
     Row(
         modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         if (showDetails) {
             val infiniteTransition = rememberInfiniteTransition(label = "clock_tick")
             val rotation by infiniteTransition.animateFloat(
                 initialValue = 0f,
                 targetValue = 360f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(2000, easing = LinearEasing),
-                    repeatMode = RepeatMode.Restart
-                ),
-                label = "rotation"
+                animationSpec =
+                    infiniteRepeatable(
+                        animation = tween(2000, easing = LinearEasing),
+                        repeatMode = RepeatMode.Restart,
+                    ),
+                label = "rotation",
             )
             Icon(
                 imageVector = Icons.Default.Refresh,
                 contentDescription = null,
-                modifier = Modifier
-                    .size(16.dp)
-                    .graphicsLayer(rotationZ = rotation),
-                tint = TextSecondary
+                modifier =
+                    Modifier
+                        .size(16.dp)
+                        .graphicsLayer(rotationZ = rotation),
+                tint = TextSecondary,
             )
             Spacer(modifier = Modifier.width(13.dp))
         }
@@ -121,16 +129,17 @@ fun CountdownText(
                 transitionSpec = {
                     slideInVertically { -it } togetherWith slideOutVertically { it }
                 },
-                label = "label_animation"
+                label = "label_animation",
             ) { text ->
                 Text(
                     text = text,
                     fontSize = 12.sp,
-                    fontWeight = if (showDetails) {
-                        FontWeight.SemiBold
-                    } else {
-                        FontWeight.Normal
-                    },
+                    fontWeight =
+                        if (showDetails) {
+                            FontWeight.SemiBold
+                        } else {
+                            FontWeight.Normal
+                        },
                     color = TextPrimary,
                 )
             }

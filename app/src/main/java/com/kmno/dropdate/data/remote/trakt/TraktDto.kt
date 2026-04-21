@@ -15,7 +15,7 @@ data class TraktMovieDto(
     val year: Int?,
     val ids: TraktIdsDto?,
     val overview: String?,
-    val released: String?,   // "YYYY-MM-DD"
+    val released: String?, // "YYYY-MM-DD"
     val rating: Float?,
     val votes: Int?,
 )
@@ -32,7 +32,7 @@ data class TraktShowDto(
     val year: Int?,
     val ids: TraktIdsDto?,
     val overview: String?,
-    @SerialName("first_aired") val firstAired: String?,  // ISO-8601 datetime
+    @SerialName("first_aired") val firstAired: String?, // ISO-8601 datetime
     val rating: Float?,
     val votes: Int?,
 )

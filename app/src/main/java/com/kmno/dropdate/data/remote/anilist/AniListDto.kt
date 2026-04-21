@@ -10,7 +10,9 @@ data class AniListRequest(
 )
 
 @Serializable
-data class AniListResponse(val data: AniListData?)
+data class AniListResponse(
+    val data: AniListData?,
+)
 
 @Serializable
 data class AniListData(

@@ -3,8 +3,12 @@ package com.kmno.dropdate.data.remote.anilist
 import retrofit2.http.Body
 import retrofit2.http.POST
 
-fun aniListScheduleQuery(weekStartUnix: Int, weekEndUnix: Int) = AniListRequest(
-    query = """
+fun aniListScheduleQuery(
+    weekStartUnix: Int,
+    weekEndUnix: Int,
+) = AniListRequest(
+    query =
+        """
         query (${'$'}weekStart: Int, ${'$'}weekEnd: Int) {
           Page(page: 1, perPage: 100) {
             airingSchedules(
@@ -27,12 +31,14 @@ fun aniListScheduleQuery(weekStartUnix: Int, weekEndUnix: Int) = AniListRequest(
             }
           }
         }
-    """.trimIndent(),
+        """.trimIndent(),
     variables = mapOf("weekStart" to weekStartUnix, "weekEnd" to weekEndUnix),
 )
 
 interface AniListApi {
     // Base URL ends with "/"; "." resolves back to root → https://graphql.anilist.co/
     @POST(".")
-    suspend fun getAnimeSchedule(@Body request: AniListRequest): AniListResponse
+    suspend fun getAnimeSchedule(
+        @Body request: AniListRequest,
+    ): AniListResponse
 }

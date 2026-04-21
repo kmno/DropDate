@@ -68,50 +68,54 @@ fun WeekScroller(
     val density = LocalDensity.current
 
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(
             onClick = onPreviousClick,
             enabled = canGoBack,
-            modifier = Modifier.size(40.dp)
+            modifier = Modifier.size(40.dp),
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                 contentDescription = "Previous Day",
                 tint = if (canGoBack) TextSecondary else TextSecondary.copy(alpha = 0.25f),
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(20.dp),
             )
         }
 
         Box(
-            modifier = Modifier
-                .weight(1f)
-                .onGloballyPositioned { totalWidth = it.size.width }
+            modifier =
+                Modifier
+                    .weight(1f)
+                    .onGloballyPositioned { totalWidth = it.size.width },
         ) {
             val itemWidthPx = totalWidth / 7f
             val itemWidthDp = with(density) { itemWidthPx.toDp() }
 
             val pillOffset by animateDpAsState(
                 targetValue = itemWidthDp * selectedIndex,
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioLowBouncy,
-                    stiffness = Spring.StiffnessMedium,
-                ),
+                animationSpec =
+                    spring(
+                        dampingRatio = Spring.DampingRatioLowBouncy,
+                        stiffness = Spring.StiffnessMedium,
+                    ),
                 label = "pillOffset",
             )
 
             // Sliding pill background
             if (totalWidth > 0) {
                 Box(
-                    modifier = Modifier
-                        .offset(x = pillOffset)
-                        .width(itemWidthDp)
-                        .height(65.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(All.copy(alpha = 0.15f))
+                    modifier =
+                        Modifier
+                            .offset(x = pillOffset)
+                            .width(itemWidthDp)
+                            .height(65.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(All.copy(alpha = 0.15f)),
                 )
             }
 
@@ -122,24 +126,27 @@ fun WeekScroller(
                     val isSelected = day == selectedDay
                     val isToday = day == today
                     Column(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(12.dp))
-                            .pointerInput(day) {
-                                detectTapGestures(
-                                    onTap = { onDaySelected(day) },
-                                    onDoubleTap = { onDoubleTapDay(day) }
-                                )
-                            }
-                            .padding(vertical = 8.dp),
+                        modifier =
+                            Modifier
+                                .weight(1f)
+                                .clip(RoundedCornerShape(12.dp))
+                                .pointerInput(day) {
+                                    detectTapGestures(
+                                        onTap = { onDaySelected(day) },
+                                        onDoubleTap = { onDoubleTapDay(day) },
+                                    )
+                                }
+                                .padding(vertical = 8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Text(
-                            text = day.dayOfWeek.getDisplayName(
-                                TextStyle.SHORT,
-                                Locale.getDefault()
-                            )
-                                .take(3).uppercase(),
+                            text =
+                                day.dayOfWeek
+                                    .getDisplayName(
+                                        TextStyle.SHORT,
+                                        Locale.getDefault(),
+                                    ).take(3)
+                                    .uppercase(),
                             fontSize = 10.sp,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                             color = if (isSelected) All else TextSecondary,
@@ -152,9 +159,10 @@ fun WeekScroller(
                         )
                         if (isToday) {
                             Box(
-                                modifier = Modifier
-                                    .size(4.dp)
-                                    .background(All, CircleShape)
+                                modifier =
+                                    Modifier
+                                        .size(4.dp)
+                                        .background(All, CircleShape),
                             )
                         } else {
                             Spacer(Modifier.height(4.dp))
@@ -167,13 +175,13 @@ fun WeekScroller(
         IconButton(
             onClick = onNextClick,
             enabled = canGoForward,
-            modifier = Modifier.size(40.dp)
+            modifier = Modifier.size(40.dp),
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = "Next Day",
                 tint = if (canGoForward) TextSecondary else TextSecondary.copy(alpha = 0.25f),
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(20.dp),
             )
         }
     }

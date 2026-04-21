@@ -1,0 +1,3 @@
+[*.{kt,kts}]
+# standard ktlint rules
+ktlint_standard_function-naming = disabled

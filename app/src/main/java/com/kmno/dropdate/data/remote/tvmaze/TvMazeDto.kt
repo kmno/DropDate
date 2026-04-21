@@ -19,7 +19,7 @@ data class TvMazeScheduleEntryDto(
 
 @Serializable
 data class TvMazeEmbeddedDto(
-    val show: TvMazeShowDto? = null
+    val show: TvMazeShowDto? = null,
 )
 
 @Serializable

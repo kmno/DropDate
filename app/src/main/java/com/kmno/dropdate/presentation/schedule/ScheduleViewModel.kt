@@ -25,12 +25,13 @@ import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
-class ScheduleViewModel @Inject constructor(
+class ScheduleViewModel
+@Inject
+constructor(
     private val getWeekReleases: GetWeekReleasesUseCase,
     private val syncReleases: SyncReleasesUseCase,
     private val cleanupReleases: CleanupReleasesUseCase,
 ) : ViewModel() {
-
     private val today = LocalDate.now()
 
     // 3-week frame: last Mon → next Sun
@@ -40,11 +41,12 @@ class ScheduleViewModel @Inject constructor(
     // Tracks which week-start dates have already been fetched this session
     private val syncedWeeks = mutableSetOf<LocalDate>()
 
-    private val _state = MutableStateFlow(
-        ScheduleUiState(isLoading = true).let { s ->
-            s.copy(canGoBack = s.selectedDay > minDay, canGoForward = s.selectedDay < maxDay)
-        }
-    )
+    private val _state =
+        MutableStateFlow(
+            ScheduleUiState(isLoading = true).let { s ->
+                s.copy(canGoBack = s.selectedDay > minDay, canGoForward = s.selectedDay < maxDay)
+            },
+        )
     val state: StateFlow<ScheduleUiState> = _state.asStateFlow()
 
     init {
@@ -57,8 +59,7 @@ class ScheduleViewModel @Inject constructor(
                     _state.update { it.copy(isLoading = true) }
                     getWeekReleases(weekStart, weekStart.plusDays(6))
                         .map { releases -> releases.groupAndFilter(filter, selectedDay) }
-                }
-                .collectLatest { grouped ->
+                }.collectLatest { grouped ->
                     _state.update { it.copy(releases = grouped, isLoading = false) }
                 }
         }
@@ -132,13 +133,14 @@ class ScheduleViewModel @Inject constructor(
 
         // Update week if we cross boundaries
         val currentWeekStart = _state.value.selectedWeekStart
-        val newWeekStart = if (newDay.isBefore(currentWeekStart)) {
-            newDay.minusDays(newDay.dayOfWeek.value.toLong() - 1)
-        } else if (newDay.isAfter(currentWeekStart.plusDays(6))) {
-            newDay.minusDays(newDay.dayOfWeek.value.toLong() - 1)
-        } else {
-            currentWeekStart
-        }
+        val newWeekStart =
+            if (newDay.isBefore(currentWeekStart)) {
+                newDay.minusDays(newDay.dayOfWeek.value.toLong() - 1)
+            } else if (newDay.isAfter(currentWeekStart.plusDays(6))) {
+                newDay.minusDays(newDay.dayOfWeek.value.toLong() - 1)
+            } else {
+                currentWeekStart
+            }
 
         _state.update {
             it.copy(
@@ -153,11 +155,12 @@ class ScheduleViewModel @Inject constructor(
     fun onSwipeFilter(isNext: Boolean) {
         val filters = ContentFilter.entries
         val currentIndex = filters.indexOf(_state.value.activeFilter)
-        val nextIndex = if (isNext) {
-            (currentIndex + 1) % filters.size
-        } else {
-            (currentIndex - 1 + filters.size) % filters.size
-        }
+        val nextIndex =
+            if (isNext) {
+                (currentIndex + 1) % filters.size
+            } else {
+                (currentIndex - 1 + filters.size) % filters.size
+            }
         _state.update { it.copy(activeFilter = filters[nextIndex]) }
     }
 
@@ -177,17 +180,19 @@ class ScheduleViewModel @Inject constructor(
 
     private fun List<Release>.groupAndFilter(
         filter: ContentFilter,
-        selectedDay: LocalDate
+        selectedDay: LocalDate,
     ): Map<LocalDate, List<Release>> {
-        val filtered = this.filter { release ->
-            val matchesFilter = when (filter) {
-                ContentFilter.ALL -> true
-                ContentFilter.MOVIES -> release.type == ReleaseType.MOVIE
-                ContentFilter.SERIES -> release.type == ReleaseType.SERIES
-                ContentFilter.ANIME -> release.type == ReleaseType.ANIME
+        val filtered =
+            this.filter { release ->
+                val matchesFilter =
+                    when (filter) {
+                        ContentFilter.ALL -> true
+                        ContentFilter.MOVIES -> release.type == ReleaseType.MOVIE
+                        ContentFilter.SERIES -> release.type == ReleaseType.SERIES
+                        ContentFilter.ANIME -> release.type == ReleaseType.ANIME
+                    }
+                matchesFilter && release.airDate == selectedDay
             }
-            matchesFilter && release.airDate == selectedDay
-        }
         return filtered.groupBy { it.airDate }
     }
 }

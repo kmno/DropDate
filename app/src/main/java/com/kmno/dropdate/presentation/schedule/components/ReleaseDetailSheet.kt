@@ -77,11 +77,12 @@ fun ReleaseDetailSheet(
         }
     }
 
-    val accentColor = when (release.type) {
-        ReleaseType.MOVIE  -> MovieAmber
-        ReleaseType.SERIES -> SeriesRed
-        ReleaseType.ANIME  -> AnimePurple
-    }
+    val accentColor =
+        when (release.type) {
+            ReleaseType.MOVIE -> MovieAmber
+            ReleaseType.SERIES -> SeriesRed
+            ReleaseType.ANIME -> AnimePurple
+        }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -90,11 +91,13 @@ fun ReleaseDetailSheet(
         dragHandle = null,
     ) {
         Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-
             // Hero — blurred backdrop + poster
-            Box(modifier = Modifier
-                .fillMaxWidth()
-                .height(220.dp)) {
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .height(220.dp),
+            ) {
                 // Backdrop (blurred via heavy downscale)
                 AsyncImage(
                     model = release.backdropUrl ?: release.posterUrl,
@@ -104,25 +107,27 @@ fun ReleaseDetailSheet(
                 )
                 // Dark scrim
                 Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .background(
-                            Brush.verticalGradient(
-                                0f to Color.Black.copy(alpha = 0.4f),
-                                1f to Background,
-                            )
-                        )
+                    modifier =
+                        Modifier
+                            .matchParentSize()
+                            .background(
+                                Brush.verticalGradient(
+                                    0f to Color.Black.copy(alpha = 0.4f),
+                                    1f to Background,
+                                ),
+                            ),
                 )
                 // Poster thumbnail
                 AsyncImage(
                     model = release.posterUrl,
                     contentDescription = release.title,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(start = 16.dp, bottom = 16.dp)
-                        .size(width = 90.dp, height = 130.dp)
-                        .clip(RoundedCornerShape(10.dp)),
+                    modifier =
+                        Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(start = 16.dp, bottom = 16.dp)
+                            .size(width = 90.dp, height = 130.dp)
+                            .clip(RoundedCornerShape(10.dp)),
                 )
             }
 
@@ -141,16 +146,20 @@ fun ReleaseDetailSheet(
                 Spacer(Modifier.height(4.dp))
 
                 // Type · Year · Episode · Genres
-                val metaRemainder = buildString {
-                    release.airDate.year.let { append("$it") }
-                    release.episodeLabel?.let { append(" · $it") }
-                    if (release.genres.isNotEmpty()) {
-                        append(" · ${release.genres.joinToString(", ")}")
+                val metaRemainder =
+                    buildString {
+                        release.airDate.year.let { append("$it") }
+                        release.episodeLabel?.let { append(" · $it") }
+                        if (release.genres.isNotEmpty()) {
+                            append(" · ${release.genres.joinToString(", ")}")
+                        }
                     }
-                }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        text = release.type.name.lowercase().replaceFirstChar { it.uppercase() },
+                        text =
+                            release.type.name
+                                .lowercase()
+                                .replaceFirstChar { it.uppercase() },
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = accentColor,
@@ -187,11 +196,12 @@ fun ReleaseDetailSheet(
                     ReleasedBanner(release = release)
                 } else {
                     Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Surface)
-                            .padding(12.dp),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Surface)
+                                .padding(12.dp),
                         contentAlignment = Alignment.Center,
                     ) {
                         CountdownText(airDate = release.airDate, airTime = release.airTime)
@@ -205,7 +215,10 @@ fun ReleaseDetailSheet(
 }
 
 @Composable
-private fun StarRating(rating: Float, accentColor: Color) {
+private fun StarRating(
+    rating: Float,
+    accentColor: Color,
+) {
     var animatedRating by remember { mutableStateOf(0f) }
     val displayRating by animateFloatAsState(
         targetValue = animatedRating,
@@ -234,7 +247,10 @@ private fun StarRating(rating: Float, accentColor: Color) {
 }
 
 @Composable
-private fun SynopsisSection(synopsis: String, accentColor: Color) {
+private fun SynopsisSection(
+    synopsis: String,
+    accentColor: Color,
+) {
     var expanded by remember { mutableStateOf(false) }
     val preview = synopsis.take(180).let { if (synopsis.length > 180) "$it…" else it }
 
@@ -278,12 +294,13 @@ private fun SynopsisSection(synopsis: String, accentColor: Color) {
 @Composable
 private fun ReleasedBanner(release: Release) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            .background(ReleasedGreen.copy(alpha = 0.15f))
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .background(ReleasedGreen.copy(alpha = 0.15f))
+                .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         // Pulsing Indicator
         Box(contentAlignment = Alignment.Center, modifier = Modifier.size(24.dp)) {
@@ -291,32 +308,36 @@ private fun ReleasedBanner(release: Release) {
             val scale by infiniteTransition.animateFloat(
                 initialValue = 1f,
                 targetValue = 2.5f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(1200),
-                    repeatMode = RepeatMode.Reverse
-                ),
-                label = "scale"
+                animationSpec =
+                    infiniteRepeatable(
+                        animation = tween(1200),
+                        repeatMode = RepeatMode.Reverse,
+                    ),
+                label = "scale",
             )
             val alpha by infiniteTransition.animateFloat(
                 initialValue = 0.5f,
                 targetValue = 0f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(1200),
-                    repeatMode = RepeatMode.Reverse
-                ),
-                label = "alpha"
+                animationSpec =
+                    infiniteRepeatable(
+                        animation = tween(1200),
+                        repeatMode = RepeatMode.Reverse,
+                    ),
+                label = "alpha",
             )
 
             Box(
-                modifier = Modifier
-                    .size(8.dp)
-                    .scale(scale)
-                    .background(ReleasedGreen.copy(alpha = alpha), CircleShape)
+                modifier =
+                    Modifier
+                        .size(8.dp)
+                        .scale(scale)
+                        .background(ReleasedGreen.copy(alpha = alpha), CircleShape),
             )
             Box(
-                modifier = Modifier
-                    .size(8.dp)
-                    .background(ReleasedGreen, CircleShape)
+                modifier =
+                    Modifier
+                        .size(8.dp)
+                        .background(ReleasedGreen, CircleShape),
             )
         }
 
@@ -325,14 +346,14 @@ private fun ReleasedBanner(release: Release) {
         Row(
             modifier = Modifier.weight(1f),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = "AVAILABLE NOW",
                 color = ReleasedGreen,
                 fontWeight = FontWeight.Black,
                 fontSize = 12.sp,
-                letterSpacing = 1.sp
+                letterSpacing = 1.sp,
             )
         }
     }

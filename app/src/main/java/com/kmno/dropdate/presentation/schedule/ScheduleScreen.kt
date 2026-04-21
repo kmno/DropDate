@@ -74,9 +74,7 @@ import com.kmno.dropdate.ui.theme.TextSecondary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScheduleScreen(
-    viewModel: ScheduleViewModel = hiltViewModel(),
-) {
+fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     val view = LocalView.current
@@ -86,27 +84,31 @@ fun ScheduleScreen(
     }
 
     // Anchor scroll to selected day
-    val lazyListState = androidx.compose.foundation.lazy.rememberLazyListState()
+    val lazyListState =
+        androidx.compose.foundation.lazy
+            .rememberLazyListState()
     val sortedDates = remember(state.releases) { state.releases.keys.sorted() }
-    val selectedDayIndex = remember(state.selectedDay, sortedDates) {
-        sortedDates.indexOfFirst { it == state.selectedDay }.coerceAtLeast(0)
-    }
+    val selectedDayIndex =
+        remember(state.selectedDay, sortedDates) {
+            sortedDates.indexOfFirst { it == state.selectedDay }.coerceAtLeast(0)
+        }
     LaunchedEffect(state.selectedDay) {
         if (sortedDates.isNotEmpty()) lazyListState.animateScrollToItem(selectedDayIndex)
     }
 
     Scaffold { paddingValues ->
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .background(Background),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .background(Background),
         ) {
             PullToRefreshBox(
                 isRefreshing = state.isSyncing,
                 onRefresh = viewModel::onRefresh,
                 modifier = Modifier.fillMaxSize(),
-                indicator = {} // Hide default spinner
+                indicator = {}, // Hide default spinner
             ) {
                 Column(modifier = Modifier.fillMaxSize()) {
                     // Custom linear sync indicator using section colors
@@ -126,17 +128,21 @@ fun ScheduleScreen(
                         onDoubleTapDay = viewModel::onDoubleTapDay,
                         onPreviousClick = { viewModel.onSwipeDay(isNext = false) },
                         onNextClick = { viewModel.onSwipeDay(isNext = true) },
-                        modifier = Modifier.pointerInput(Unit) {
-                            var totalDrag = 0f
-                            detectHorizontalDragGestures(
-                                onDragEnd = {
-                                    if (totalDrag > 100) viewModel.onSwipeDay(isNext = false)
-                                    else if (totalDrag < -100) viewModel.onSwipeDay(isNext = true)
-                                    totalDrag = 0f
-                                },
-                                onHorizontalDrag = { _, dragAmount -> totalDrag += dragAmount }
-                            )
-                        }
+                        modifier =
+                            Modifier.pointerInput(Unit) {
+                                var totalDrag = 0f
+                                detectHorizontalDragGestures(
+                                    onDragEnd = {
+                                        if (totalDrag > 100) {
+                                            viewModel.onSwipeDay(isNext = false)
+                                        } else if (totalDrag < -100) {
+                                            viewModel.onSwipeDay(isNext = true)
+                                        }
+                                        totalDrag = 0f
+                                    },
+                                    onHorizontalDrag = { _, dragAmount -> totalDrag += dragAmount },
+                                )
+                            },
                     )
 
                     HorizontalDivider(color = Surface, thickness = 1.dp)
@@ -145,17 +151,21 @@ fun ScheduleScreen(
                     ContentTypeChips(
                         activeFilter = state.activeFilter,
                         onFilterSelected = viewModel::onFilterChanged,
-                        modifier = Modifier.pointerInput(Unit) {
-                            var totalDrag = 0f
-                            detectHorizontalDragGestures(
-                                onDragEnd = {
-                                    if (totalDrag > 100) viewModel.onSwipeFilter(isNext = false)
-                                    else if (totalDrag < -100) viewModel.onSwipeFilter(isNext = true)
-                                    totalDrag = 0f
-                                },
-                                onHorizontalDrag = { _, dragAmount -> totalDrag += dragAmount }
-                            )
-                        }
+                        modifier =
+                            Modifier.pointerInput(Unit) {
+                                var totalDrag = 0f
+                                detectHorizontalDragGestures(
+                                    onDragEnd = {
+                                        if (totalDrag > 100) {
+                                            viewModel.onSwipeFilter(isNext = false)
+                                        } else if (totalDrag < -100) {
+                                            viewModel.onSwipeFilter(isNext = true)
+                                        }
+                                        totalDrag = 0f
+                                    },
+                                    onHorizontalDrag = { _, dragAmount -> totalDrag += dragAmount },
+                                )
+                            },
                     )
 
                     HorizontalDivider(color = Surface, thickness = 1.dp)
@@ -167,11 +177,12 @@ fun ScheduleScreen(
                         Text(
                             text = "Error: $error",
                             color = SeriesRed,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
                             textAlign = TextAlign.Center,
-                            fontSize = 14.sp
+                            fontSize = 14.sp,
                         )
                     }
 
@@ -182,22 +193,23 @@ fun ScheduleScreen(
                             (fadeIn() + slideInHorizontally { it / 4 }) togetherWith (fadeOut() + slideOutHorizontally { -it / 4 })
                         },
                         label = "feedTransition",
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth(),
+                        modifier =
+                            Modifier
+                                .weight(1f)
+                                .fillMaxWidth(),
                     ) { filter ->
                         val flat = state.releases.values.flatten()
 
                         if (flat.isEmpty() && !state.isLoading) {
                             Box(
                                 modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
+                                contentAlignment = Alignment.Center,
                             ) {
                                 Text(
                                     text = "No releases found for this day.\nTry another date or pull to refresh.",
                                     color = TextSecondary,
                                     textAlign = TextAlign.Center,
-                                    fontSize = 14.sp
+                                    fontSize = 14.sp,
                                 )
                             }
                         } else if (filter == ContentFilter.ALL) {
@@ -212,32 +224,38 @@ fun ScheduleScreen(
                                 contentPadding = PaddingValues(bottom = 32.dp),
                                 verticalArrangement = Arrangement.spacedBy(16.dp),
                             ) {
-                                if (movies.isNotEmpty()) item {
-                                    ReleaseSection(
-                                        title = "Movies",
-                                        accentColor = MovieAmber,
-                                        releases = movies,
-                                        onReleaseClick = viewModel::onReleaseSelected,
-                                        onMoreClick = { viewModel.onFilterChanged(ContentFilter.MOVIES) }
-                                    )
+                                if (movies.isNotEmpty()) {
+                                    item {
+                                        ReleaseSection(
+                                            title = "Movies",
+                                            accentColor = MovieAmber,
+                                            releases = movies,
+                                            onReleaseClick = viewModel::onReleaseSelected,
+                                            onMoreClick = { viewModel.onFilterChanged(ContentFilter.MOVIES) },
+                                        )
+                                    }
                                 }
-                                if (series.isNotEmpty()) item {
-                                    ReleaseSection(
-                                        title = "Series",
-                                        accentColor = SeriesRed,
-                                        releases = series,
-                                        onReleaseClick = viewModel::onReleaseSelected,
-                                        onMoreClick = { viewModel.onFilterChanged(ContentFilter.SERIES) }
-                                    )
+                                if (series.isNotEmpty()) {
+                                    item {
+                                        ReleaseSection(
+                                            title = "Series",
+                                            accentColor = SeriesRed,
+                                            releases = series,
+                                            onReleaseClick = viewModel::onReleaseSelected,
+                                            onMoreClick = { viewModel.onFilterChanged(ContentFilter.SERIES) },
+                                        )
+                                    }
                                 }
-                                if (anime.isNotEmpty()) item {
-                                    ReleaseSection(
-                                        title = "Anime",
-                                        accentColor = AnimePurple,
-                                        releases = anime,
-                                        onReleaseClick = viewModel::onReleaseSelected,
-                                        onMoreClick = { viewModel.onFilterChanged(ContentFilter.ANIME) }
-                                    )
+                                if (anime.isNotEmpty()) {
+                                    item {
+                                        ReleaseSection(
+                                            title = "Anime",
+                                            accentColor = AnimePurple,
+                                            releases = anime,
+                                            onReleaseClick = viewModel::onReleaseSelected,
+                                            onMoreClick = { viewModel.onFilterChanged(ContentFilter.ANIME) },
+                                        )
+                                    }
                                 }
                             }
                         } else {
@@ -289,51 +307,65 @@ private fun AppIconLoadingScreen() {
     val floatY by transition.animateFloat(
         initialValue = 0f,
         targetValue = -18f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1600, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse,
-        ),
+        animationSpec =
+            infiniteRepeatable(
+                animation = tween(1600, easing = FastOutSlowInEasing),
+                repeatMode = RepeatMode.Reverse,
+            ),
         label = "floatY",
     )
 
     // Each dot pulses with a 200 ms stagger via phase offset
     val scale0 by transition.animateFloat(
-        initialValue = 0.82f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            tween(900, easing = FastOutSlowInEasing), RepeatMode.Reverse,
-            StartOffset(0, StartOffsetType.FastForward),
-        ),
+        initialValue = 0.82f,
+        targetValue = 1f,
+        animationSpec =
+            infiniteRepeatable(
+                tween(900, easing = FastOutSlowInEasing),
+                RepeatMode.Reverse,
+                StartOffset(0, StartOffsetType.FastForward),
+            ),
         label = "s0",
     )
     val scale1 by transition.animateFloat(
-        initialValue = 0.82f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            tween(900, easing = FastOutSlowInEasing), RepeatMode.Reverse,
-            StartOffset(200, StartOffsetType.FastForward),
-        ),
+        initialValue = 0.82f,
+        targetValue = 1f,
+        animationSpec =
+            infiniteRepeatable(
+                tween(900, easing = FastOutSlowInEasing),
+                RepeatMode.Reverse,
+                StartOffset(200, StartOffsetType.FastForward),
+            ),
         label = "s1",
     )
     val scale2 by transition.animateFloat(
-        initialValue = 0.82f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            tween(900, easing = FastOutSlowInEasing), RepeatMode.Reverse,
-            StartOffset(400, StartOffsetType.FastForward),
-        ),
+        initialValue = 0.82f,
+        targetValue = 1f,
+        animationSpec =
+            infiniteRepeatable(
+                tween(900, easing = FastOutSlowInEasing),
+                RepeatMode.Reverse,
+                StartOffset(400, StartOffsetType.FastForward),
+            ),
         label = "s2",
     )
     val scale3 by transition.animateFloat(
-        initialValue = 0.82f, targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            tween(900, easing = FastOutSlowInEasing), RepeatMode.Reverse,
-            StartOffset(600, StartOffsetType.FastForward),
-        ),
+        initialValue = 0.82f,
+        targetValue = 1f,
+        animationSpec =
+            infiniteRepeatable(
+                tween(900, easing = FastOutSlowInEasing),
+                RepeatMode.Reverse,
+                StartOffset(600, StartOffsetType.FastForward),
+            ),
         label = "s3",
     )
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Background),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(Background),
         contentAlignment = Alignment.Center,
     ) {
         Column(
@@ -347,11 +379,11 @@ private fun AppIconLoadingScreen() {
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    LoadingDot(color = All, scale = scale0)       // top-left  — blue
+                    LoadingDot(color = All, scale = scale0) // top-left  — blue
                     LoadingDot(color = MovieAmber, scale = scale1) // top-right — amber
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    LoadingDot(color = SeriesRed, scale = scale2)  // bot-left  — red
+                    LoadingDot(color = SeriesRed, scale = scale2) // bot-left  — red
                     LoadingDot(color = AnimePurple, scale = scale3) // bot-right — purple
                 }
             }
@@ -376,12 +408,19 @@ private fun AppIconLoadingScreen() {
 }
 
 @Composable
-private fun LoadingDot(color: Color, scale: Float) {
+private fun LoadingDot(
+    color: Color,
+    scale: Float,
+) {
     Box(
-        modifier = Modifier
-            .size(44.dp)
-            .graphicsLayer { scaleX = scale; scaleY = scale }
-            .background(color, CircleShape),
+        modifier =
+            Modifier
+                .size(44.dp)
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                }
+                .background(color, CircleShape),
     )
 }
 
@@ -391,35 +430,38 @@ private fun SyncProgressBar(modifier: Modifier = Modifier) {
     val xOffset by infiniteTransition.animateFloat(
         initialValue = -1f,
         targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "xOffset"
+        animationSpec =
+            infiniteRepeatable(
+                animation = tween(1200, easing = LinearEasing),
+                repeatMode = RepeatMode.Restart,
+            ),
+        label = "xOffset",
     )
 
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(3.dp)
-            .background(Surface.copy(alpha = 0.1f))
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .height(3.dp)
+                .background(Surface.copy(alpha = 0.1f)),
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxWidth(0.7f)
-                .fillMaxHeight()
-                .graphicsLayer { translationX = size.width * xOffset }
-                .background(
-                    Brush.horizontalGradient(
-                        listOf(
-                            MovieAmber.copy(alpha = 0f),
-                            MovieAmber,
-                            SeriesRed,
-                            AnimePurple,
-                            AnimePurple.copy(alpha = 0f)
-                        )
-                    )
-                )
+            modifier =
+                Modifier
+                    .fillMaxWidth(0.7f)
+                    .fillMaxHeight()
+                    .graphicsLayer { translationX = size.width * xOffset }
+                    .background(
+                        Brush.horizontalGradient(
+                            listOf(
+                                MovieAmber.copy(alpha = 0f),
+                                MovieAmber,
+                                SeriesRed,
+                                AnimePurple,
+                                AnimePurple.copy(alpha = 0f),
+                            ),
+                        ),
+                    ),
         )
     }
 }

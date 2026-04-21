@@ -33,14 +33,18 @@ import com.kmno.dropdate.ui.theme.ReleasedGreen
 import com.kmno.dropdate.ui.theme.TextPrimary
 
 @Composable
-fun WatchBadge(platform: String?, modifier: Modifier = Modifier) {
+fun WatchBadge(
+    platform: String?,
+    modifier: Modifier = Modifier,
+) {
     var visible by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
         targetValue = if (visible) 1f else 0f,
-        animationSpec = spring(
-            dampingRatio = Spring.DampingRatioLowBouncy,
-            stiffness = Spring.StiffnessMedium,
-        ),
+        animationSpec =
+            spring(
+                dampingRatio = Spring.DampingRatioLowBouncy,
+                stiffness = Spring.StiffnessMedium,
+            ),
         label = "watchBadgeScale",
     )
 
@@ -48,10 +52,11 @@ fun WatchBadge(platform: String?, modifier: Modifier = Modifier) {
 
     Spacer(Modifier.height(5.dp))
     Row(
-        modifier = modifier
-            .scale(scale)
-            .background(ReleasedGreen, RoundedCornerShape(4.dp))
-            .padding(horizontal = 6.dp, vertical = 3.dp),
+        modifier =
+            modifier
+                .scale(scale)
+                .background(ReleasedGreen, RoundedCornerShape(4.dp))
+                .padding(horizontal = 6.dp, vertical = 3.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Icon(

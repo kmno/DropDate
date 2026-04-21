@@ -8,13 +8,17 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ReleaseDao {
-
-    @Query("""
+    @Query(
+        """
         SELECT * FROM releases
         WHERE airDate BETWEEN :from AND :to
         ORDER BY airDate ASC, rating DESC
-    """)
-    fun observeByWeek(from: String, to: String): Flow<List<ReleaseEntity>>
+    """,
+    )
+    fun observeByWeek(
+        from: String,
+        to: String,
+    ): Flow<List<ReleaseEntity>>
 
     @Upsert
     suspend fun upsertAll(releases: List<ReleaseEntity>)

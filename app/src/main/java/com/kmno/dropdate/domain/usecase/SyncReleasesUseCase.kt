@@ -4,9 +4,13 @@ import com.kmno.dropdate.domain.repository.ReleaseRepository
 import java.time.LocalDate
 import javax.inject.Inject
 
-class SyncReleasesUseCase @Inject constructor(
-    private val repository: ReleaseRepository
+class SyncReleasesUseCase
+@Inject
+constructor(
+    private val repository: ReleaseRepository,
 ) {
-    suspend operator fun invoke(weekStart: LocalDate, weekEnd: LocalDate): Result<Unit> =
-        repository.syncReleases(weekStart, weekEnd)
+    suspend operator fun invoke(
+        weekStart: LocalDate,
+        weekEnd: LocalDate,
+    ): Result<Unit> = repository.syncReleases(weekStart, weekEnd)
 }

@@ -8,6 +8,7 @@ import com.kmno.dropdate.domain.usecase.SyncReleasesUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -20,21 +21,31 @@ import org.junit.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ScheduleViewModelTest {
-
     private val testDispatcher = StandardTestDispatcher()
     private val getWeekReleases: GetWeekReleasesUseCase = mock()
     private val syncReleases: SyncReleasesUseCase = mock()
 
-    private fun fakeRelease(id: String, type: ReleaseType, date: LocalDate) = Release(
-        id = id, title = "T$id", posterUrl = null, backdropUrl = null,
-        type = type, status = ReleaseStatus.UPCOMING,
-        airDate = date, airTime = null, platform = null,
-        episodeLabel = null, rating = null, synopsis = null,
+    private fun fakeRelease(
+        id: String,
+        type: ReleaseType,
+        date: LocalDate,
+    ) = Release(
+        id = id,
+        title = "T$id",
+        posterUrl = null,
+        backdropUrl = null,
+        type = type,
+        status = ReleaseStatus.UPCOMING,
+        airDate = date,
+        airTime = null,
+        platform = null,
+        episodeLabel = null,
+        rating = null,
+        synopsis = null,
     )
 
     @Before
@@ -45,46 +56,53 @@ class ScheduleViewModelTest {
     }
 
     @After
-    fun tearDown() { Dispatchers.resetMain() }
-
-    @Test
-    fun `initial state has correct defaults`() = runTest {
-        val vm = ScheduleViewModel(getWeekReleases, syncReleases)
-        val state = vm.state.value
-        assertEquals(ContentFilter.ALL, state.activeFilter)
-        assertNull(state.selectedRelease)
-        assertNull(state.error)
+    fun tearDown() {
+        Dispatchers.resetMain()
     }
 
     @Test
-    fun `onFilterChanged updates activeFilter`() = runTest {
-        val vm = ScheduleViewModel(getWeekReleases, syncReleases)
-        vm.onFilterChanged(ContentFilter.ANIME)
-        assertEquals(ContentFilter.ANIME, vm.state.value.activeFilter)
-    }
+    fun `initial state has correct defaults`() =
+        runTest {
+            val vm = ScheduleViewModel(getWeekReleases, syncReleases)
+            val state = vm.state.value
+            assertEquals(ContentFilter.ALL, state.activeFilter)
+            assertNull(state.selectedRelease)
+            assertNull(state.error)
+        }
 
     @Test
-    fun `onReleaseSelected sets selectedRelease`() = runTest {
-        val vm = ScheduleViewModel(getWeekReleases, syncReleases)
-        val release = fakeRelease("1", ReleaseType.MOVIE, LocalDate.now())
-        vm.onReleaseSelected(release)
-        assertEquals(release, vm.state.value.selectedRelease)
-    }
+    fun `onFilterChanged updates activeFilter`() =
+        runTest {
+            val vm = ScheduleViewModel(getWeekReleases, syncReleases)
+            vm.onFilterChanged(ContentFilter.ANIME)
+            assertEquals(ContentFilter.ANIME, vm.state.value.activeFilter)
+        }
 
     @Test
-    fun `onSheetDismissed clears selectedRelease`() = runTest {
-        val vm = ScheduleViewModel(getWeekReleases, syncReleases)
-        val release = fakeRelease("1", ReleaseType.MOVIE, LocalDate.now())
-        vm.onReleaseSelected(release)
-        vm.onSheetDismissed()
-        assertNull(vm.state.value.selectedRelease)
-    }
+    fun `onReleaseSelected sets selectedRelease`() =
+        runTest {
+            val vm = ScheduleViewModel(getWeekReleases, syncReleases)
+            val release = fakeRelease("1", ReleaseType.MOVIE, LocalDate.now())
+            vm.onReleaseSelected(release)
+            assertEquals(release, vm.state.value.selectedRelease)
+        }
 
     @Test
-    fun `onDaySelected updates selectedDay`() = runTest {
-        val vm = ScheduleViewModel(getWeekReleases, syncReleases)
-        val tuesday = LocalDate.now().with(java.time.DayOfWeek.TUESDAY)
-        vm.onDaySelected(tuesday)
-        assertEquals(tuesday, vm.state.value.selectedDay)
-    }
+    fun `onSheetDismissed clears selectedRelease`() =
+        runTest {
+            val vm = ScheduleViewModel(getWeekReleases, syncReleases)
+            val release = fakeRelease("1", ReleaseType.MOVIE, LocalDate.now())
+            vm.onReleaseSelected(release)
+            vm.onSheetDismissed()
+            assertNull(vm.state.value.selectedRelease)
+        }
+
+    @Test
+    fun `onDaySelected updates selectedDay`() =
+        runTest {
+            val vm = ScheduleViewModel(getWeekReleases, syncReleases)
+            val tuesday = LocalDate.now().with(java.time.DayOfWeek.TUESDAY)
+            vm.onDaySelected(tuesday)
+            assertEquals(tuesday, vm.state.value.selectedDay)
+        }
 }
