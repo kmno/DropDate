@@ -15,4 +15,6 @@ data class ScheduleUiState(
     val isLoading: Boolean            = false,
     val isSyncing: Boolean            = false,
     val error: String?                = null,
+    val canGoBack: Boolean = true,
+    val canGoForward: Boolean = true,
 )

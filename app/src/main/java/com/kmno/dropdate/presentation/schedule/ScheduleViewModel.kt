@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kmno.dropdate.domain.model.Release
 import com.kmno.dropdate.domain.model.ReleaseType
+import com.kmno.dropdate.domain.usecase.CleanupReleasesUseCase
 import com.kmno.dropdate.domain.usecase.GetWeekReleasesUseCase
 import com.kmno.dropdate.domain.usecase.SyncReleasesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.DayOfWeek
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -26,12 +28,27 @@ import javax.inject.Inject
 class ScheduleViewModel @Inject constructor(
     private val getWeekReleases: GetWeekReleasesUseCase,
     private val syncReleases: SyncReleasesUseCase,
+    private val cleanupReleases: CleanupReleasesUseCase,
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(ScheduleUiState(isLoading = true))
+    private val today = LocalDate.now()
+
+    // 3-week frame: last Mon → next Sun
+    private val minDay = today.with(DayOfWeek.MONDAY).minusWeeks(1)
+    private val maxDay = today.with(DayOfWeek.MONDAY).plusWeeks(1).plusDays(6)
+
+    // Tracks which week-start dates have already been fetched this session
+    private val syncedWeeks = mutableSetOf<LocalDate>()
+
+    private val _state = MutableStateFlow(
+        ScheduleUiState(isLoading = true).let { s ->
+            s.copy(canGoBack = s.selectedDay > minDay, canGoForward = s.selectedDay < maxDay)
+        }
+    )
     val state: StateFlow<ScheduleUiState> = _state.asStateFlow()
 
     init {
+        // Observe DB — reacts to week/day/filter changes
         viewModelScope.launch {
             _state
                 .map { Triple(it.selectedWeekStart, it.selectedDay, it.activeFilter) }
@@ -39,25 +56,63 @@ class ScheduleViewModel @Inject constructor(
                 .flatMapLatest { (weekStart, selectedDay, filter) ->
                     _state.update { it.copy(isLoading = true) }
                     getWeekReleases(weekStart, weekStart.plusDays(6))
-                        .map { releases ->
-                            releases.groupAndFilter(filter, selectedDay)
-                        }
+                        .map { releases -> releases.groupAndFilter(filter, selectedDay) }
                 }
                 .collectLatest { grouped ->
                     _state.update { it.copy(releases = grouped, isLoading = false) }
                 }
         }
-        onRefresh()
+
+        // Lazy-fetch: sync a week the first time it becomes visible
+        viewModelScope.launch {
+            _state
+                .map { it.selectedWeekStart }
+                .distinctUntilChanged()
+                .collect { weekStart ->
+                    if (weekStart !in syncedWeeks) fetchWeek(weekStart)
+                }
+        }
+
+        // Clean up releases older than last Monday at startup
+        viewModelScope.launch { cleanupReleases(minDay) }
+    }
+
+    private suspend fun fetchWeek(weekStart: LocalDate) {
+        _state.update { it.copy(isSyncing = true, error = null) }
+        try {
+            syncReleases(weekStart, weekStart.plusDays(6))
+                .onSuccess { syncedWeeks.add(weekStart) }
+                .onFailure { e ->
+                    Log.e("ScheduleViewModel", "Failed to sync week $weekStart: ${e.message}")
+                    _state.update { it.copy(error = e.message) }
+                }
+        } finally {
+            _state.update { it.copy(isSyncing = false) }
+        }
     }
 
     fun onDaySelected(day: LocalDate) {
-        _state.update { it.copy(selectedDay = day) }
+        if (day < minDay || day > maxDay) return
+        _state.update {
+            it.copy(
+                selectedDay = day,
+                canGoBack = day > minDay,
+                canGoForward = day < maxDay,
+            )
+        }
     }
 
     fun onDoubleTapDay(day: LocalDate) {
-        // Center the selected day in the week view (3 days before, 3 days after)
+        if (day < minDay || day > maxDay) return
         val newWeekStart = day.minusDays(3)
-        _state.update { it.copy(selectedDay = day, selectedWeekStart = newWeekStart) }
+        _state.update {
+            it.copy(
+                selectedDay = day,
+                selectedWeekStart = newWeekStart,
+                canGoBack = day > minDay,
+                canGoForward = day < maxDay,
+            )
+        }
     }
 
     fun onWeekChanged(weekStart: LocalDate) {
@@ -72,6 +127,9 @@ class ScheduleViewModel @Inject constructor(
         val currentDay = _state.value.selectedDay
         val newDay = if (isNext) currentDay.plusDays(1) else currentDay.minusDays(1)
 
+        // Clamp to 3-week frame
+        if (newDay < minDay || newDay > maxDay) return
+
         // Update week if we cross boundaries
         val currentWeekStart = _state.value.selectedWeekStart
         val newWeekStart = if (newDay.isBefore(currentWeekStart)) {
@@ -82,7 +140,14 @@ class ScheduleViewModel @Inject constructor(
             currentWeekStart
         }
 
-        _state.update { it.copy(selectedDay = newDay, selectedWeekStart = newWeekStart) }
+        _state.update {
+            it.copy(
+                selectedDay = newDay,
+                selectedWeekStart = newWeekStart,
+                canGoBack = newDay > minDay,
+                canGoForward = newDay < maxDay,
+            )
+        }
     }
 
     fun onSwipeFilter(isNext: Boolean) {
@@ -106,18 +171,8 @@ class ScheduleViewModel @Inject constructor(
 
     fun onRefresh() {
         val weekStart = _state.value.selectedWeekStart
-        viewModelScope.launch {
-            _state.update { it.copy(isSyncing = true, error = null) }
-            try {
-                syncReleases(weekStart, weekStart.plusDays(6))
-                    .onFailure { e ->
-                        Log.e("ScheduleViewModel", "Failed to sync releases ${e.message}")
-                        _state.update { it.copy(error = e.message) }
-                    }
-            } finally {
-                _state.update { it.copy(isSyncing = false) }
-            }
-        }
+        syncedWeeks.remove(weekStart) // force re-fetch for the visible week
+        viewModelScope.launch { fetchWeek(weekStart) }
     }
 
     private fun List<Release>.groupAndFilter(

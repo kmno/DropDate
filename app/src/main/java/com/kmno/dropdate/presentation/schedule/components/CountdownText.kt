@@ -47,6 +47,7 @@ fun CountdownText(
     airDate: LocalDate,
     airTime: LocalTime?,
     modifier: Modifier = Modifier,
+    showDetails: Boolean = true,
 ) {
     val targetEpoch = remember(airDate, airTime) {
         val time = airTime ?: LocalTime.of(23, 59, 59)
@@ -84,34 +85,36 @@ fun CountdownText(
     val timeFormatter = remember { DateTimeFormatter.ofPattern("hh:mm a") }
     val exactDateText = remember(airDate, airTime) {
         val datePart = airDate.format(dateFormatter)
-        val timePart = airTime?.format(timeFormatter) ?: "Time TBD"
-        "$datePart • $timePart"
+        val timePart = "• ${airTime?.format(timeFormatter) ?: "Time TBD"}"
+        "$datePart $timePart"
     }
-
-    val infiniteTransition = rememberInfiniteTransition(label = "clock_tick")
-    val rotation by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(2000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "rotation"
-    )
 
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = Icons.Default.Refresh,
-            contentDescription = null,
-            modifier = Modifier
-                .size(14.dp)
-                .graphicsLayer(rotationZ = rotation),
-            tint = TextSecondary
-        )
-        Spacer(modifier = Modifier.width(8.dp))
+        if (showDetails) {
+            val infiniteTransition = rememberInfiniteTransition(label = "clock_tick")
+            val rotation by infiniteTransition.animateFloat(
+                initialValue = 0f,
+                targetValue = 360f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(2000, easing = LinearEasing),
+                    repeatMode = RepeatMode.Restart
+                ),
+                label = "rotation"
+            )
+            Icon(
+                imageVector = Icons.Default.Refresh,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(14.dp)
+                    .graphicsLayer(rotationZ = rotation),
+                tint = TextSecondary
+            )
+            Spacer(modifier = Modifier.width(13.dp))
+        }
+
         Column {
             AnimatedContent(
                 targetState = labelText,
@@ -123,16 +126,18 @@ fun CountdownText(
                 Text(
                     text = text,
                     fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
+                    fontWeight = FontWeight.SemiBold,
                     color = TextPrimary,
                 )
             }
-            Text(
-                text = exactDateText,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Medium,
-                color = TextSecondary,
-            )
+            if (showDetails) {
+                Text(
+                    text = exactDateText,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = TextSecondary,
+                )
+            }
         }
     }
 }

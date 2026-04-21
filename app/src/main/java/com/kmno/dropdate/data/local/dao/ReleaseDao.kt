@@ -21,4 +21,7 @@ interface ReleaseDao {
 
     @Query("DELETE FROM releases WHERE syncedAt < :threshold")
     suspend fun deleteStale(threshold: Long)
+
+    @Query("DELETE FROM releases WHERE airDate < :before")
+    suspend fun deleteOldReleases(before: String)
 }

@@ -191,7 +191,7 @@ fun ReleaseDetailSheet(
                             .fillMaxWidth()
                             .clip(RoundedCornerShape(12.dp))
                             .background(Surface)
-                            .padding(16.dp),
+                            .padding(12.dp),
                         contentAlignment = Alignment.Center,
                     ) {
                         CountdownText(airDate = release.airDate, airTime = release.airTime)

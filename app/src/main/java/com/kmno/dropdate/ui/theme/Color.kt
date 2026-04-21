@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Color
 
 // Background layers
 val Background  = Color(0xFF080810)
-val Surface     = Color(0xFF12121E)
+val Surface = Color(0xff27274a)
 val SurfaceAlt  = Color(0xFF1A1A2E)
 
 // Content-type accents

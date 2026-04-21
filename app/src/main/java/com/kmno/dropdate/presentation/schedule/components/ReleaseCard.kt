@@ -63,27 +63,38 @@ object PlatformBranding {
     fun getColor(name: String): Color = when {
         name.contains("netflix", true) -> Color(0xFFE50914)
         name.contains("disney", true) -> Color(0xFF113CCF)
-        name.contains("max", true) || name.contains("hbo", true) -> Color(0xFF0047FF)
+        name.contains("max", true) -> Color(0xFF0047FF)
         name.contains("prime", true) || name.contains("amazon", true) -> Color(0xFF00A8E1)
         name.contains("hulu", true) -> Color(0xFF1CE783)
-        name.contains("apple", true) -> Color(0xFF000000)
-        name.contains("peacock", true) -> Color(0xFF000000)
+        name.contains("apple", true) -> Color(0xFF555555)
+        name.contains("peacock", true) -> Color(0xFF0F6CBD)
         name.contains("paramount", true) -> Color(0xFF0064FF)
         name.contains("crunchyroll", true) -> Color(0xFFF47521)
         name.contains("funimation", true) -> Color(0xFF7700BA)
+        name.contains("amc", true) -> Color(0xFF2B2B2B)
+        name.contains("mgm", true) -> Color(0xFF8B7536)
+        name.contains("showtime", true) -> Color(0xFFCC0000)
+        name.contains("showmax", true) -> Color(0xFF00D4FF)
+        name.contains("fx", true) -> Color(0xFF000000)
         else -> Color(0xFF6B6B85)
     }
 
     fun getDisplayName(name: String): String = when {
         name.contains("netflix", true) -> "NETFLIX"
         name.contains("disney", true) -> "DISNEY+"
-        name.contains("max", true) -> "MAX"
-        name.contains("hbo", true) -> "HBO"
+        name.contains("max", true) -> "HBO Max"
         name.contains("prime", true) -> "PRIME"
         name.contains("amazon", true) -> "PRIME"
         name.contains("apple", true) -> "APPLE TV+"
         name.contains("paramount", true) -> "P+"
         name.contains("crunchyroll", true) -> "CRUNCHY"
+        name.contains("peacock", true) -> "PEACOCK"
+        name.contains("hulu", true) -> "hulu"
+        name.contains("amc", true) -> "AMC+"
+        name.contains("mgm", true) -> "MGM+"
+        name.contains("showtime", true) -> "SHOWTIME"
+        name.contains("showmax", true) -> "SHOWMAX"
+        name.contains("fx", true) -> "FX"
         else -> name.take(8).uppercase()
     }
 
@@ -98,7 +109,7 @@ object PlatformBranding {
             true
         ) -> "https://www.logo.wine/a/logo/Disney%2B/Disney%2B-Logo.wine.svg"
 
-        name.contains("max", true) || name.contains(
+        name.contains("hbo", true) || name.contains(
             "hbo",
             true
         ) -> "https://www.logo.wine/a/logo/HBO_Max/HBO_Max-Logo.wine.svg"
@@ -243,8 +254,8 @@ fun ReleaseCard(
                 Text(
                     text = release.title,
                     color = TextPrimary,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     lineHeight = 16.sp,
@@ -263,13 +274,17 @@ fun ReleaseCard(
                     }
                 }
 
-                Spacer(Modifier.height(3.dp))
+                Spacer(Modifier.height(2.dp))
 
                 // Badge or countdown
                 if (release.status == ReleaseStatus.RELEASED) {
                     WatchBadge(platform = null)
                 } else {
-                    CountdownText(airDate = release.airDate, airTime = release.airTime)
+                    CountdownText(
+                        airDate = release.airDate,
+                        airTime = release.airTime,
+                        showDetails = false
+                    )
                 }
             }
         }

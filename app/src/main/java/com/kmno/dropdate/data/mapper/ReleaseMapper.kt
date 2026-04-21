@@ -3,7 +3,6 @@ package com.kmno.dropdate.data.mapper
 // import com.kmno.dropdate.data.remote.trakt.TraktAnticipatedMovieDto
 // import com.kmno.dropdate.data.remote.trakt.TraktAnticipatedShowDto
 import com.kmno.dropdate.data.local.entity.ReleaseEntity
-import com.kmno.dropdate.data.remote.anilist.AniListMedia
 import com.kmno.dropdate.data.remote.anilist.AniListResponse
 import com.kmno.dropdate.data.remote.tmdb.TmdbMovieListDto
 import com.kmno.dropdate.data.remote.tmdb.TmdbTvListDto
@@ -136,42 +135,44 @@ class ReleaseMapper @Inject constructor() {
 
     fun fromTvMaze(entries: List<TvMazeScheduleEntryDto>): List<ReleaseEntity> {
         val now = System.currentTimeMillis()
-        val seen = mutableSetOf<String>()
         return entries
             .filter { entry ->
                 val show = entry.show ?: return@filter false
                 val isPopular = (show.network?.name?.isPopularStreamer() == true ||
                         show.webChannel?.name?.isPopularStreamer() == true)
-
                 val isEnglish = show.language?.isEnglish() == true
                 val isScripted = show.type.isScripted()
-
                 isPopular && isEnglish && isScripted
             }
-            .mapNotNull { entry ->
-                val show = entry.show ?: return@mapNotNull null
-                val id = "tvmaze_${show.id}"
-                if (id in seen) return@mapNotNull null
-                seen.add(id)
-
-                val dateStr = entry.airdate ?: return@mapNotNull null
+            // Group by show + airdate: same-day multi-episode drops become one row
+            .groupBy { "${it.show!!.id}_${it.airdate}" }
+            .mapNotNull { (_, group) ->
+                val first = group.first()
+                val show = first.show ?: return@mapNotNull null
+                val dateStr = first.airdate ?: return@mapNotNull null
                 val date = parseLocalDate(dateStr) ?: return@mapNotNull null
 
-                val epLabel = if (entry.season != null && entry.number != null) {
-                    "S%02dE%02d".format(entry.season, entry.number)
-                } else null
+                val episodeLabel = if (group.size == 1) {
+                    if (first.season != null && first.number != null)
+                        "S%02dE%02d".format(first.season, first.number)
+                    else null
+                } else {
+                    val season = group.mapNotNull { it.season }.distinct().singleOrNull()
+                    if (season != null) "S$season · ${group.size} eps"
+                    else "${group.size} eps"
+                }
 
                 ReleaseEntity(
-                    id = id,
+                    id = "tvmaze_${show.id}_$dateStr",
                     title = show.name,
                     posterUrl = show.image?.original ?: show.image?.medium,
                     backdropUrl = show.image?.original ?: show.image?.medium,
                     type = ReleaseType.SERIES.name,
                     status = releaseStatus(date),
                     airDate = dateStr,
-                    airTime = entry.airtime,
+                    airTime = if (group.size == 1) first.airtime else null,
                     platform = show.network?.name ?: show.webChannel?.name,
-                    episodeLabel = epLabel,
+                    episodeLabel = episodeLabel,
                     rating = show.rating?.average?.let { it * 1f },
                     synopsis = show.summary?.replace(Regex("<.*?>"), ""),
                     genres = show.genres.joinToString(",").takeIf { it.isNotBlank() },
@@ -240,58 +241,42 @@ class ReleaseMapper @Inject constructor() {
         }
     */
 
-    // ── Anime (AniList) ──────────────────────────────────────────────────────
+    // ── Anime (AniList airingSchedules) ─────────────────────────────────────
 
     fun fromAniList(response: AniListResponse): List<ReleaseEntity> {
-        val seen = mutableSetOf<Int>()
         val now = System.currentTimeMillis()
-        val releasing = response.data?.releasing?.media ?: emptyList()
-        val upcoming = response.data?.upcoming?.media ?: emptyList()
-        return (releasing + upcoming)
-            .filter { it.id !in seen && seen.add(it.id) }
-            .mapNotNull { media -> mapAniListMedia(media, now) }
-    }
-
-    private fun mapAniListMedia(media: AniListMedia, now: Long): ReleaseEntity? {
         val today = LocalDate.now()
-        val (dateStr, status) = when {
-            media.nextAiringEpisode != null -> {
-                val date = Instant.ofEpochSecond(media.nextAiringEpisode.airingAt)
+        return response.data?.page?.airingSchedules
+            .orEmpty()
+            .mapNotNull { entry ->
+                val media = entry.media ?: return@mapNotNull null
+                val title = media.title?.english?.takeIf { it.isNotBlank() }
+                    ?: media.title?.romaji
+                    ?: return@mapNotNull null
+                val date = Instant.ofEpochSecond(entry.airingAt)
                     .atZone(ZoneOffset.UTC).toLocalDate()
-                date.toString() to if (date.isAfter(today)) ReleaseStatus.UPCOMING else ReleaseStatus.RELEASED
+                val dateStr = date.toString()
+                val status = if (date.isAfter(today)) ReleaseStatus.UPCOMING.name
+                else ReleaseStatus.RELEASED.name
+                val platform = media.externalLinks
+                    .firstOrNull { it.site?.isPopularStreamer() == true }?.site
+                ReleaseEntity(
+                    id = "anilist_${media.id}_${dateStr}_ep${entry.episode}",
+                    title = title,
+                    posterUrl = media.coverImage?.large,
+                    backdropUrl = media.coverImage?.large,
+                    type = ReleaseType.ANIME.name,
+                    status = status,
+                    airDate = dateStr,
+                    airTime = null,
+                    platform = platform,
+                    episodeLabel = "Ep ${entry.episode}",
+                    rating = media.averageScore?.let { it / 10f },
+                    synopsis = media.description?.replace(Regex("<.*?>"), ""),
+                    genres = media.genres.joinToString(",").takeIf { it.isNotBlank() },
+                    syncedAt = now,
+                )
             }
-
-            media.startDate != null -> {
-                val y = media.startDate.year ?: return null
-                val m = (media.startDate.month ?: 1).coerceIn(1, 12)
-                val d = (media.startDate.day ?: 1).coerceIn(1, 28)
-                val date = runCatching { LocalDate.of(y, m, d) }.getOrNull() ?: return null
-                date.toString() to if (date.isAfter(today)) ReleaseStatus.UPCOMING else ReleaseStatus.RELEASED
-            }
-
-            else -> return null
-        }
-        val title = media.title?.english?.takeIf { it.isNotBlank() }
-            ?: media.title?.romaji
-            ?: return null
-        val platform =
-            media.externalLinks.firstOrNull { it.site?.isPopularStreamer() == true }?.site
-        return ReleaseEntity(
-            id = "anilist_${media.id}",
-            title = title,
-            posterUrl = media.coverImage?.large,
-            backdropUrl = media.coverImage?.large,
-            type = ReleaseType.ANIME.name,
-            status = status.name,
-            airDate = dateStr,
-            airTime = null,
-            platform = platform,
-            episodeLabel = media.nextAiringEpisode?.episode?.let { "Ep $it" },
-            rating = media.averageScore?.let { it / 10f },
-            synopsis = media.description?.replace(Regex("<.*?>"), ""),
-            genres = media.genres.joinToString(",").takeIf { it.isNotBlank() },
-            syncedAt = now,
-        )
     }
 
     // ── Domain mapping ───────────────────────────────────────────────────────

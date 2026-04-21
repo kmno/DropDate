@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2026-04-20T16:06:31.407435800Z">
+        <DropdownSelection timestamp="2026-04-20T22:49:42.575176500Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\kamra\.android\avd\Android_16.avd" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\kamra\.android\avd\Pixel_10.avd" />
             </handle>
           </Target>
         </DropdownSelection>

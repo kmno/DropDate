@@ -7,4 +7,5 @@ import java.time.LocalDate
 interface ReleaseRepository {
     fun getReleasesForWeek(weekStart: LocalDate, weekEnd: LocalDate): Flow<List<Release>>
     suspend fun syncReleases(weekStart: LocalDate, weekEnd: LocalDate): Result<Unit>
+    suspend fun deleteOldReleases(before: LocalDate)
 }

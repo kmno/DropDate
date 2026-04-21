@@ -2,8 +2,8 @@ package com.kmno.dropdate.data.repository
 
 import com.kmno.dropdate.data.local.dao.ReleaseDao
 import com.kmno.dropdate.data.mapper.ReleaseMapper
-import com.kmno.dropdate.data.remote.anilist.ANILIST_ANIME_QUERY
 import com.kmno.dropdate.data.remote.anilist.AniListApi
+import com.kmno.dropdate.data.remote.anilist.aniListScheduleQuery
 import com.kmno.dropdate.data.remote.tmdb.TMDB_POPULAR_PROVIDERS
 import com.kmno.dropdate.data.remote.tmdb.TmdbApi
 import com.kmno.dropdate.data.remote.tvmaze.TvMazeApi
@@ -15,6 +15,8 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneOffset
 import javax.inject.Inject
 
 class ReleaseRepositoryImpl @Inject constructor(
@@ -38,6 +40,8 @@ class ReleaseRepositoryImpl @Inject constructor(
         weekEnd: LocalDate,
     ): Result<Unit> = runCatching {
         coroutineScope {
+            val dayCount = (weekEnd.toEpochDay() - weekStart.toEpochDay() + 1).toInt()
+
             // Fire independent network calls simultaneously
             val movies = async {
                 tmdbApi.discoverMovies(
@@ -56,18 +60,15 @@ class ReleaseRepositoryImpl @Inject constructor(
                 )
             }
 
-            // TVMaze: rate limit allows 5 realtime calls; batch first 5 then delay for remaining 2
-            val tvMazeBatch1 = (0..14).map { i ->
+            val allTvMazeDays = (0 until dayCount).map { i ->
                 async { tvMazeApi.getStreamingSchedule(weekStart.plusDays(i.toLong()).toString()) }
-            }
-            //val batch1Results = tvMazeBatch1.awaitAll()
-            //delay(1_000L)
-            // val tvMazeBatch2 = (5..6).map { i ->
-            // async { tvMazeApi.getStreamingSchedule(weekStart.plusDays(i.toLong()).toString()) }
-            // }
-            val allTvMazeDays = tvMazeBatch1.awaitAll().flatten()
+            }.awaitAll().flatten()
 
-            val anime = async { aniListApi.getAnimeSchedule(ANILIST_ANIME_QUERY) }
+            val weekStartUnix = weekStart.atStartOfDay().toEpochSecond(ZoneOffset.UTC).toInt()
+            val weekEndUnix = weekEnd.atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC).toInt()
+            val anime = async {
+                aniListApi.getAnimeSchedule(aniListScheduleQuery(weekStartUnix, weekEndUnix))
+            }
 
             val entities = buildList {
                 addAll(
@@ -78,11 +79,13 @@ class ReleaseRepositoryImpl @Inject constructor(
                     )
                 )
                 addAll(mapper.fromTvMaze(allTvMazeDays))
-                // addAll(mapper.fromTvMaze(tvMazeUS.await()))
                 addAll(mapper.fromAniList(anime.await()))
             }
             dao.upsertAll(entities)
-            // dao.deleteStale(System.currentTimeMillis() - 7.days.inWholeMilliseconds)
         }
+    }
+
+    override suspend fun deleteOldReleases(before: LocalDate) {
+        dao.deleteOldReleases(before.toString())
     }
 }

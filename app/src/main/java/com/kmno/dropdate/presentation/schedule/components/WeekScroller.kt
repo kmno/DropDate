@@ -53,6 +53,8 @@ fun WeekScroller(
     weekStart: LocalDate,
     selectedDay: LocalDate,
     today: LocalDate = LocalDate.now(),
+    canGoBack: Boolean = true,
+    canGoForward: Boolean = true,
     onDaySelected: (LocalDate) -> Unit,
     onDoubleTapDay: (LocalDate) -> Unit,
     onPreviousClick: () -> Unit,
@@ -73,12 +75,13 @@ fun WeekScroller(
     ) {
         IconButton(
             onClick = onPreviousClick,
+            enabled = canGoBack,
             modifier = Modifier.size(40.dp)
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                 contentDescription = "Previous Day",
-                tint = TextSecondary,
+                tint = if (canGoBack) TextSecondary else TextSecondary.copy(alpha = 0.25f),
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -163,12 +166,13 @@ fun WeekScroller(
 
         IconButton(
             onClick = onNextClick,
+            enabled = canGoForward,
             modifier = Modifier.size(40.dp)
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = "Next Day",
-                tint = TextSecondary,
+                tint = if (canGoForward) TextSecondary else TextSecondary.copy(alpha = 0.25f),
                 modifier = Modifier.size(20.dp)
             )
         }
