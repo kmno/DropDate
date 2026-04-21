@@ -6,6 +6,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -45,6 +46,7 @@ fun WatchBadge(platform: String?, modifier: Modifier = Modifier) {
 
     LaunchedEffect(Unit) { visible = true }
 
+    Spacer(Modifier.height(5.dp))
     Row(
         modifier = modifier
             .scale(scale)

@@ -108,7 +108,7 @@ fun CountdownText(
                 imageVector = Icons.Default.Refresh,
                 contentDescription = null,
                 modifier = Modifier
-                    .size(14.dp)
+                    .size(16.dp)
                     .graphicsLayer(rotationZ = rotation),
                 tint = TextSecondary
             )
@@ -126,7 +126,11 @@ fun CountdownText(
                 Text(
                     text = text,
                     fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
+                    fontWeight = if (showDetails) {
+                        FontWeight.SemiBold
+                    } else {
+                        FontWeight.Normal
+                    },
                     color = TextPrimary,
                 )
             }

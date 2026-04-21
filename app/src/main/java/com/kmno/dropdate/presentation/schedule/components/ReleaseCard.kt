@@ -80,20 +80,20 @@ object PlatformBranding {
     }
 
     fun getDisplayName(name: String): String = when {
-        name.contains("netflix", true) -> "NETFLIX"
-        name.contains("disney", true) -> "DISNEY+"
+        name.contains("netflix", true) -> "Netflix"
+        name.contains("disney", true) -> "Disney+"
         name.contains("max", true) -> "HBO Max"
-        name.contains("prime", true) -> "PRIME"
-        name.contains("amazon", true) -> "PRIME"
-        name.contains("apple", true) -> "APPLE TV+"
-        name.contains("paramount", true) -> "P+"
-        name.contains("crunchyroll", true) -> "CRUNCHY"
-        name.contains("peacock", true) -> "PEACOCK"
+        name.contains("prime", true) -> "Prime"
+        name.contains("amazon", true) -> "Prime"
+        name.contains("apple", true) -> "Apple TV+"
+        name.contains("paramount", true) -> "Paramount+"
+        name.contains("crunchyroll", true) -> "Crunchyroll"
+        name.contains("peacock", true) -> "peacock"
         name.contains("hulu", true) -> "hulu"
         name.contains("amc", true) -> "AMC+"
         name.contains("mgm", true) -> "MGM+"
-        name.contains("showtime", true) -> "SHOWTIME"
-        name.contains("showmax", true) -> "SHOWMAX"
+        name.contains("showtime", true) -> "Showtime"
+        name.contains("showmax", true) -> "ShowMax"
         name.contains("fx", true) -> "FX"
         else -> name.take(8).uppercase()
     }

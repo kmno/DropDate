@@ -259,6 +259,7 @@ private fun SynopsisSection(synopsis: String, accentColor: Color) {
                 fontSize = 14.sp,
                 color = TextPrimary,
                 lineHeight = 20.sp,
+                fontWeight = FontWeight.Light,
             )
         }
 
