@@ -1,0 +1,89 @@
+#!/usr/bin/env bash
+#
+# Git pre-commit hook
+# 1. Runs ktlintFormat on staged .kt/.kts files (auto-fixes and re-stages)
+# 2. Runs detekt on staged .kt/.kts files (fails commit on issues)
+#
+
+set -euo pipefail
+
+# Collect staged Kotlin files (exclude deleted files)
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=d -- '*.kt' '*.kts')
+
+if [ -z "$STAGED_FILES" ]; then
+    echo "Pre-commit: no Kotlin files staged, skipping checks."
+    exit 0
+fi
+
+echo "Pre-commit: found staged Kotlin files"
+
+# Determine which modules have changed files
+MODULES=()
+for file in $STAGED_FILES; do
+    # Extract module name (first path component, e.g. "app")
+    module=$(echo "$file" | cut -d'/' -f1)
+    # Only add if it's a real module directory with a build file
+    if [ -f "$module/build.gradle.kts" ] || [ -f "$module/build.gradle" ]; then
+        MODULES+=("$module")
+    fi
+done
+
+# Deduplicate modules
+UNIQUE_MODULES=($(printf '%s\n' "${MODULES[@]}" | sort -u))
+
+if [ ${#UNIQUE_MODULES[@]} -eq 0 ]; then
+    echo "Pre-commit: no module-level Kotlin changes, skipping."
+    exit 0
+fi
+
+echo "Pre-commit: affected modules: ${UNIQUE_MODULES[*]}"
+
+# Detect gradlew
+if [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" || "$OSTYPE" == "win32" ]]; then
+    GRADLEW="./gradlew.bat"
+else
+    GRADLEW="./gradlew"
+fi
+
+# --- Step 1: ktlintFormat on affected modules ---
+echo ""
+echo "=== Running ktlintFormat ==="
+
+KTLINT_TASKS=""
+for mod in "${UNIQUE_MODULES[@]}"; do
+    KTLINT_TASKS="$KTLINT_TASKS :${mod}:ktlintFormat"
+done
+
+if ! $GRADLEW $KTLINT_TASKS --daemon --quiet; then
+    echo ""
+    echo "ktlintFormat failed. Please fix the above issues and try again."
+    exit 1
+fi
+
+# Re-stage any files that ktlintFormat modified
+for file in $STAGED_FILES; do
+    if [ -f "$file" ]; then
+        git add "$file"
+    fi
+done
+
+echo "ktlintFormat passed (formatted files re-staged)."
+
+# --- Step 2: detekt on affected modules ---
+echo ""
+echo "=== Running detekt ==="
+
+DETEKT_TASKS=""
+for mod in "${UNIQUE_MODULES[@]}"; do
+    DETEKT_TASKS="$DETEKT_TASKS :${mod}:detekt"
+done
+
+if ! $GRADLEW $DETEKT_TASKS --daemon --quiet; then
+    echo ""
+    echo "detekt found issues. Please fix them before committing."
+    exit 1
+fi
+
+echo "detekt passed."
+echo ""
+echo "Pre-commit checks passed."
