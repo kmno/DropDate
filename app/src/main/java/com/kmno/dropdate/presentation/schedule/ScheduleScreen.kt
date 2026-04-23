@@ -160,19 +160,39 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                     }
 
                     // Feed — animated on filter change
+                    val allReleasesForDay = remember(state.releases) {
+                        state.releases.values.flatten()
+                    }
+
                     AnimatedContent(
                         targetState = state.activeFilter,
                         transitionSpec = {
-                            (fadeIn() + slideInHorizontally { it / 4 }) togetherWith (fadeOut() + slideOutHorizontally { -it / 4 })
+                            (fadeIn(animationSpec = tween(220, delayMillis = 90)) +
+                                    slideInHorizontally(
+                                        initialOffsetX = { it / 4 },
+                                        animationSpec = tween(220, delayMillis = 90)
+                                    )) togetherWith
+                                    (fadeOut(animationSpec = tween(90)) +
+                                            slideOutHorizontally(
+                                                targetOffsetX = { -it / 4 },
+                                                animationSpec = tween(90)
+                                            ))
                         },
                         label = "feedTransition",
                         modifier = Modifier
                             .weight(1f)
                             .fillMaxWidth(),
                     ) { filter ->
-                        val flat = state.releases.values.flatten()
+                        val filteredReleases = remember(allReleasesForDay, filter) {
+                            when (filter) {
+                                ContentFilter.ALL -> allReleasesForDay
+                                ContentFilter.MOVIES -> allReleasesForDay.filter { it.type == ReleaseType.MOVIE }
+                                ContentFilter.SERIES -> allReleasesForDay.filter { it.type == ReleaseType.SERIES }
+                                ContentFilter.ANIME -> allReleasesForDay.filter { it.type == ReleaseType.ANIME }
+                            }
+                        }
 
-                        if (flat.isEmpty() && !state.isLoading) {
+                        if (filteredReleases.isEmpty() && !state.isLoading) {
                             Box(
                                 modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center,
@@ -186,10 +206,9 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                             }
                         } else if (filter == ContentFilter.ALL) {
                             // Category rows
-                            val allReleases = state.releases.values.flatten()
-                            val movies = allReleases.filter { it.type == ReleaseType.MOVIE }
-                            val series = allReleases.filter { it.type == ReleaseType.SERIES }
-                            val anime = allReleases.filter { it.type == ReleaseType.ANIME }
+                            val movies = filteredReleases.filter { it.type == ReleaseType.MOVIE }
+                            val series = filteredReleases.filter { it.type == ReleaseType.SERIES }
+                            val anime = filteredReleases.filter { it.type == ReleaseType.ANIME }
 
                             LazyColumn(
                                 state = lazyListState,
@@ -243,7 +262,9 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                                 verticalArrangement = Arrangement.spacedBy(Dimens.SpacingNormal),
                                 horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingNormal),
                             ) {
-                                itemsIndexed(flat, key = { _, r -> r.id }) { index, release ->
+                                itemsIndexed(
+                                    filteredReleases,
+                                    key = { _, r -> r.id }) { index, release ->
                                     ReleaseCard(
                                         release = release,
                                         index = index,

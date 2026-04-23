@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.androidx.room)
     alias(libs.plugins.ktlint)
+    alias(libs.plugins.detekt)
 }
 
 val keystorePropertiesFile = rootProject.file("keystore.properties")
@@ -78,6 +79,23 @@ room {
     schemaDirectory("$projectDir/schemas")
 }
 
+detekt {
+    buildUponDefaultConfig = true
+    allRules = false
+    config.setFrom("$rootDir/config/detekt/detekt.yml")
+    baseline = file("$rootDir/config/detekt/baseline.xml")
+    parallel = true
+}
+
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    jvmTarget = "11"
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+        sarif.required.set(false)
+    }
+}
+
 dependencies {
     // Core library desugaring — enables java.time APIs on API < 26
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
@@ -136,6 +154,10 @@ dependencies {
 
     // Kotlin Serialization
     implementation(libs.kotlinx.serialization.json)
+
+    // Detekt plugins
+    detektPlugins(libs.detekt.formatting)
+    detektPlugins(libs.detekt.compose)
 
     // Testing
     testImplementation(libs.mockito.kotlin)

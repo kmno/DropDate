@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kmno.dropdate.domain.model.Release
-import com.kmno.dropdate.domain.model.ReleaseType
 import com.kmno.dropdate.domain.usecase.CleanupReleasesUseCase
 import com.kmno.dropdate.domain.usecase.GetWeekReleasesUseCase
 import com.kmno.dropdate.domain.usecase.SyncReleasesUseCase
@@ -55,13 +54,13 @@ constructor(
         // Observe DB — reacts to week/day/filter changes
         viewModelScope.launch {
             _state
-                .map { Triple(it.selectedWeekStart, it.selectedDay, it.activeFilter) }
+                .map { it.selectedWeekStart to it.selectedDay }
                 .distinctUntilChanged()
                 .debounce(timeoutMillis = 200)
-                .flatMapLatest { (weekStart, selectedDay, filter) ->
+                .flatMapLatest { (weekStart, selectedDay) ->
                     _state.update { it.copy(isLoading = true) }
                     getWeekReleases(weekStart, weekStart.plusDays(6))
-                        .map { releases -> releases.groupAndFilter(filter, selectedDay) }
+                        .map { releases -> releases.groupAndFilter(selectedDay) }
                 }.collectLatest { grouped ->
                     _state.update { it.copy(releases = grouped, isLoading = false) }
                 }
@@ -182,20 +181,9 @@ constructor(
     }
 
     private fun List<Release>.groupAndFilter(
-        filter: ContentFilter,
         selectedDay: LocalDate,
     ): Map<LocalDate, List<Release>> {
-        val filtered =
-            this.filter { release ->
-                val matchesFilter =
-                    when (filter) {
-                        ContentFilter.ALL -> true
-                        ContentFilter.MOVIES -> release.type == ReleaseType.MOVIE
-                        ContentFilter.SERIES -> release.type == ReleaseType.SERIES
-                        ContentFilter.ANIME -> release.type == ReleaseType.ANIME
-                    }
-                matchesFilter && release.airDate == selectedDay
-            }
-        return filtered.groupBy { it.airDate }
+        return this.filter { it.airDate == selectedDay }
+            .groupBy { it.airDate }
     }
 }
