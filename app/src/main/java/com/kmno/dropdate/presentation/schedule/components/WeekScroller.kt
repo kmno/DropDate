@@ -34,11 +34,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.kmno.dropdate.R
 import com.kmno.dropdate.ui.theme.All
+import com.kmno.dropdate.ui.theme.Dimens
 import com.kmno.dropdate.ui.theme.DropDateTheme
 import com.kmno.dropdate.ui.theme.TextPrimary
 import com.kmno.dropdate.ui.theme.TextSecondary
@@ -71,19 +73,19 @@ fun WeekScroller(
         modifier =
             modifier
                 .fillMaxWidth()
-                .padding(vertical = 4.dp),
+                .padding(vertical = Dimens.SpacingSmall),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(
             onClick = onPreviousClick,
             enabled = canGoBack,
-            modifier = Modifier.size(40.dp),
+            modifier = Modifier.size(Dimens.IconExtraLarge),
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                contentDescription = "Previous Day",
+                contentDescription = stringResource(R.string.prev_day),
                 tint = if (canGoBack) TextSecondary else TextSecondary.copy(alpha = 0.25f),
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier.size(Dimens.IconMedium),
             )
         }
 
@@ -100,7 +102,7 @@ fun WeekScroller(
                 targetValue = itemWidthDp * selectedIndex,
                 animationSpec =
                     spring(
-                        dampingRatio = Spring.DampingRatioLowBouncy,
+                        // dampingRatio = Spring.DampingRatioLowBouncy,
                         stiffness = Spring.StiffnessMedium,
                     ),
                 label = "pillOffset",
@@ -147,13 +149,13 @@ fun WeekScroller(
                                         Locale.getDefault(),
                                     ).take(3)
                                     .uppercase(),
-                            fontSize = 10.sp,
+                            fontSize = Dimens.FontExtraSmall,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                             color = if (isSelected) All else TextSecondary,
                         )
                         Text(
                             text = day.dayOfMonth.toString(),
-                            fontSize = 16.sp,
+                            fontSize = Dimens.FontMedium,
                             fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
                             color = if (isSelected) TextPrimary else TextSecondary,
                         )
@@ -161,11 +163,11 @@ fun WeekScroller(
                             Box(
                                 modifier =
                                     Modifier
-                                        .size(4.dp)
+                                        .size(Dimens.SpacingSmall)
                                         .background(All, CircleShape),
                             )
                         } else {
-                            Spacer(Modifier.height(4.dp))
+                            Spacer(Modifier.height(Dimens.SpacingSmall))
                         }
                     }
                 }
@@ -175,13 +177,13 @@ fun WeekScroller(
         IconButton(
             onClick = onNextClick,
             enabled = canGoForward,
-            modifier = Modifier.size(40.dp),
+            modifier = Modifier.size(Dimens.IconExtraLarge),
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = "Next Day",
+                contentDescription = stringResource(R.string.next_day),
                 tint = if (canGoForward) TextSecondary else TextSecondary.copy(alpha = 0.25f),
-                modifier = Modifier.size(20.dp),
+                modifier = Modifier.size(Dimens.IconMedium),
             )
         }
     }

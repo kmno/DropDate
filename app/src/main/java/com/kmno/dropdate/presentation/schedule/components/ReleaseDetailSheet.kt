@@ -54,10 +54,11 @@ import com.kmno.dropdate.domain.model.ReleaseStatus
 import com.kmno.dropdate.domain.model.ReleaseType
 import com.kmno.dropdate.ui.theme.AnimePurple
 import com.kmno.dropdate.ui.theme.Background
+import com.kmno.dropdate.ui.theme.Dimens
 import com.kmno.dropdate.ui.theme.MovieAmber
 import com.kmno.dropdate.ui.theme.ReleasedGreen
 import com.kmno.dropdate.ui.theme.SeriesRed
-import com.kmno.dropdate.ui.theme.Surface
+import com.kmno.dropdate.ui.theme.SurfaceAlt
 import com.kmno.dropdate.ui.theme.TextPrimary
 import com.kmno.dropdate.ui.theme.TextSecondary
 import kotlin.math.roundToInt
@@ -125,25 +126,25 @@ fun ReleaseDetailSheet(
                     modifier =
                         Modifier
                             .align(Alignment.BottomStart)
-                            .padding(start = 16.dp, bottom = 16.dp)
+                            .padding(start = Dimens.PaddingMedium, bottom = Dimens.PaddingMedium)
                             .size(width = 90.dp, height = 130.dp)
-                            .clip(RoundedCornerShape(10.dp)),
+                            .clip(RoundedCornerShape(Dimens.PaddingSmall + 2.dp)),
                 )
             }
 
             // Metadata
-            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                Spacer(Modifier.height(12.dp))
+            Column(modifier = Modifier.padding(horizontal = Dimens.PaddingMedium)) {
+                Spacer(Modifier.height(Dimens.SpacingNormal))
 
                 // Title
                 Text(
                     text = release.title,
-                    fontSize = 20.sp,
+                    fontSize = Dimens.FontTitle,
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary,
                 )
 
-                Spacer(Modifier.height(4.dp))
+                Spacer(Modifier.height(Dimens.SpacingSmall))
 
                 // Type · Year · Episode · Genres
                 val metaRemainder =
@@ -169,26 +170,26 @@ fun ReleaseDetailSheet(
                     }
                 }
 
-                Spacer(Modifier.height(8.dp))
+                Spacer(Modifier.height(Dimens.SpacingMedium))
 
                 // Star rating
                 release.rating?.let { rating ->
                     if (rating > 0) {
                         StarRating(rating = rating, accentColor = accentColor)
-                        Spacer(Modifier.height(6.dp))
+                        Spacer(Modifier.height(Dimens.SpacingSmall + 2.dp))
                     }
                 }
 
                 // Platform Badge
                 release.platform?.let { platform ->
                     PlatformLogo(platform = platform)
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(Dimens.SpacingNormal))
                 }
 
                 // Synopsis
                 release.synopsis?.takeIf { it.isNotBlank() }?.let { synopsis ->
                     SynopsisSection(synopsis = synopsis, accentColor = accentColor)
-                    Spacer(Modifier.height(16.dp))
+                    Spacer(Modifier.height(Dimens.SpacingLarge))
                 }
 
                 // CTA
@@ -199,16 +200,16 @@ fun ReleaseDetailSheet(
                         modifier =
                             Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(Surface)
-                                .padding(12.dp),
+                                .clip(RoundedCornerShape(Dimens.SpacingNormal))
+                                .background(SurfaceAlt)
+                                .padding(Dimens.SpacingNormal),
                         contentAlignment = Alignment.Center,
                     ) {
                         CountdownText(airDate = release.airDate, airTime = release.airTime)
                     }
                 }
 
-                Spacer(Modifier.height(32.dp))
+                Spacer(Modifier.height(Dimens.PaddingExtraLarge))
             }
         }
     }
@@ -234,10 +235,10 @@ private fun StarRating(
             Text(
                 text = if (filled) "★" else "☆",
                 color = if (filled) accentColor else TextSecondary,
-                fontSize = 16.sp,
+                fontSize = Dimens.FontMedium,
             )
         }
-        Spacer(Modifier.width(6.dp))
+        Spacer(Modifier.width(Dimens.SpacingMedium))
         Text(
             text = "${"%.1f".format(rating)} / 10",
             fontSize = 13.sp,
@@ -261,7 +262,7 @@ private fun SynopsisSection(
             fontWeight = FontWeight.SemiBold,
             color = TextSecondary,
         )
-        Spacer(Modifier.height(4.dp))
+        Spacer(Modifier.height(Dimens.SpacingSmall))
 
         AnimatedContent(
             targetState = expanded,
@@ -272,9 +273,9 @@ private fun SynopsisSection(
         ) { isExpanded ->
             Text(
                 text = if (isExpanded) synopsis else preview,
-                fontSize = 14.sp,
+                fontSize = Dimens.FontNormal,
                 color = TextPrimary,
-                lineHeight = 20.sp,
+                lineHeight = Dimens.FontTitle,
                 fontWeight = FontWeight.Light,
             )
         }
@@ -297,13 +298,13 @@ private fun ReleasedBanner(release: Release) {
         modifier =
             Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(Dimens.SpacingNormal))
                 .background(ReleasedGreen.copy(alpha = 0.15f))
-                .padding(16.dp),
+                .padding(Dimens.SpacingLarge),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // Pulsing Indicator
-        Box(contentAlignment = Alignment.Center, modifier = Modifier.size(24.dp)) {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.size(Dimens.IconLarge)) {
             val infiniteTransition = rememberInfiniteTransition(label = "pulse")
             val scale by infiniteTransition.animateFloat(
                 initialValue = 1f,
@@ -329,19 +330,19 @@ private fun ReleasedBanner(release: Release) {
             Box(
                 modifier =
                     Modifier
-                        .size(8.dp)
+                        .size(Dimens.PaddingSmall)
                         .scale(scale)
                         .background(ReleasedGreen.copy(alpha = alpha), CircleShape),
             )
             Box(
                 modifier =
                     Modifier
-                        .size(8.dp)
+                        .size(Dimens.PaddingSmall)
                         .background(ReleasedGreen, CircleShape),
             )
         }
 
-        Spacer(Modifier.width(12.dp))
+        Spacer(Modifier.width(Dimens.SpacingNormal))
 
         Row(
             modifier = Modifier.weight(1f),
@@ -352,7 +353,7 @@ private fun ReleasedBanner(release: Release) {
                 text = "AVAILABLE NOW",
                 color = ReleasedGreen,
                 fontWeight = FontWeight.Black,
-                fontSize = 12.sp,
+                fontSize = Dimens.FontSmall,
                 letterSpacing = 1.sp,
             )
         }

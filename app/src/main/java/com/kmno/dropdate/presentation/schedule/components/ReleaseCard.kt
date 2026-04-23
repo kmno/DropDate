@@ -48,6 +48,7 @@ import com.kmno.dropdate.domain.model.ReleaseStatus
 import com.kmno.dropdate.domain.model.ReleaseType
 import com.kmno.dropdate.ui.theme.AnimePurple
 import com.kmno.dropdate.ui.theme.Background
+import com.kmno.dropdate.ui.theme.Dimens
 import com.kmno.dropdate.ui.theme.DropDateTheme
 import com.kmno.dropdate.ui.theme.MovieAmber
 import com.kmno.dropdate.ui.theme.SeriesRed
@@ -57,7 +58,7 @@ import java.time.LocalDate
 import com.kmno.dropdate.ui.theme.Surface as ThemeSurface
 
 private val CardWidth = 140.dp
-private val CardHeight = 210.dp
+private val CardHeight = 200.dp
 
 object PlatformBranding {
     fun getColor(name: String): Color =
@@ -157,7 +158,7 @@ fun PlatformLogo(
     } else {
         Surface(
             color = PlatformBranding.getColor(platform),
-            shape = RoundedCornerShape(4.dp),
+            shape = RoundedCornerShape(Dimens.SpacingSmall),
             modifier = modifier,
         ) {
             Text(
@@ -165,7 +166,7 @@ fun PlatformLogo(
                 color = Color.White,
                 fontSize = 7.sp,
                 fontWeight = FontWeight.Black,
-                modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
+                modifier = Modifier.padding(horizontal = Dimens.SpacingSmall, vertical = 1.dp),
                 letterSpacing = 0.5.sp,
                 textAlign = TextAlign.Center,
             )
@@ -211,9 +212,13 @@ fun ReleaseCard(
                     .width(CardWidth)
                     .height(CardHeight)
                     .scale(scale)
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(Dimens.SpacingNormal))
                     .background(ThemeSurface)
-                    .border(0.5.dp, accentColor.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+                    .border(
+                        0.5.dp,
+                        accentColor.copy(alpha = 0.3f),
+                        RoundedCornerShape(Dimens.SpacingNormal)
+                    )
                     .clickable(
                         interactionSource = interactionSource,
                         indication = null,
@@ -249,7 +254,7 @@ fun ReleaseCard(
                     modifier =
                         Modifier
                             .align(Alignment.TopEnd)
-                            .padding(6.dp),
+                            .padding(Dimens.SpacingMedium),
                 )
             }
 
@@ -259,7 +264,7 @@ fun ReleaseCard(
                     Modifier
                         .align(Alignment.BottomStart)
                         .fillMaxWidth()
-                        .padding(8.dp),
+                        .padding(Dimens.SpacingMedium),
             ) {
                 Text(
                     text = release.title,
@@ -278,13 +283,13 @@ fun ReleaseCard(
                         Text(
                             text = "★ ${"%.1f".format(r)}",
                             color = accentColor,
-                            fontSize = 10.sp,
+                            fontSize = Dimens.FontExtraSmall,
                             fontWeight = FontWeight.SemiBold,
                         )
                     }
                 }
 
-                Spacer(Modifier.height(2.dp))
+                Spacer(Modifier.height(Dimens.SpacingSmall))
 
                 // Badge or countdown
                 if (release.status == ReleaseStatus.RELEASED) {

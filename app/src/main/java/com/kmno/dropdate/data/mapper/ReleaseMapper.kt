@@ -354,7 +354,12 @@ constructor() {
                     episodeLabel = "Ep ${entry.episode}",
                     rating = media.averageScore?.let { it / 10f },
                     synopsis = media.description?.replace(Regex("<.*?>"), ""),
-                    genres = media.genres.joinToString(",").takeIf { it.isNotBlank() },
+                    genres =
+                        media.genres
+                            .map { genre ->
+                                if (genre == "Hentai") "$genre (+18)" else genre
+                            }.joinToString(",")
+                            .takeIf { it.isNotBlank() },
                     syncedAt = now,
                 )
             }

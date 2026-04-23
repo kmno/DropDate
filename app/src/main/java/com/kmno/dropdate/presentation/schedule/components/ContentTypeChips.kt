@@ -25,13 +25,15 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.kmno.dropdate.R
 import com.kmno.dropdate.presentation.schedule.ContentFilter
 import com.kmno.dropdate.ui.theme.All
 import com.kmno.dropdate.ui.theme.AnimePurple
+import com.kmno.dropdate.ui.theme.Dimens
 import com.kmno.dropdate.ui.theme.DropDateTheme
 import com.kmno.dropdate.ui.theme.MovieAmber
 import com.kmno.dropdate.ui.theme.SeriesRed
@@ -45,12 +47,13 @@ private val filters =
         ContentFilter.ANIME,
     )
 
+@Composable
 private fun ContentFilter.label() =
     when (this) {
-        ContentFilter.ALL -> "All"
-        ContentFilter.MOVIES -> "Movies"
-        ContentFilter.SERIES -> "Series"
-        ContentFilter.ANIME -> "Anime"
+        ContentFilter.ALL -> stringResource(R.string.filter_all)
+        ContentFilter.MOVIES -> stringResource(R.string.filter_movies)
+        ContentFilter.SERIES -> stringResource(R.string.filter_series)
+        ContentFilter.ANIME -> stringResource(R.string.filter_anime)
     }
 
 private fun ContentFilter.accentColor() =
@@ -94,7 +97,7 @@ fun ContentTypeChips(
         modifier =
             modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
+                .padding(horizontal = Dimens.PaddingMedium),
     ) {
         // Sliding underline indicator
         Box(
@@ -126,14 +129,17 @@ fun ContentTypeChips(
                                 chipWidths[i] = coords.size.width.toFloat()
                                 chipOffsets[i] = coords.positionInParent().x
                             }
-                            .clip(RoundedCornerShape(4.dp))
+                            .clip(RoundedCornerShape(Dimens.SpacingSmall))
                             .clickable { onFilterSelected(filter) }
-                            .padding(horizontal = 12.dp, vertical = 12.dp),
+                            .padding(
+                                horizontal = Dimens.SpacingNormal,
+                                vertical = Dimens.SpacingNormal
+                            ),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = filter.label(),
-                        fontSize = 13.sp,
+                        fontSize = Dimens.FontNormal,
                         fontWeight = if (isActive) FontWeight.SemiBold else FontWeight.Normal,
                         color = textColor,
                     )
