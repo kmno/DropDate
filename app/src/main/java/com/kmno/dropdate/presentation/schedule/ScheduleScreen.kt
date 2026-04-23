@@ -67,6 +67,7 @@ import com.kmno.dropdate.presentation.schedule.components.ContentTypeChips
 import com.kmno.dropdate.presentation.schedule.components.ReleaseCard
 import com.kmno.dropdate.presentation.schedule.components.ReleaseDetailSheet
 import com.kmno.dropdate.presentation.schedule.components.ReleaseSection
+import com.kmno.dropdate.presentation.schedule.components.TopBar
 import com.kmno.dropdate.presentation.schedule.components.WeekScroller
 import com.kmno.dropdate.ui.theme.All
 import com.kmno.dropdate.ui.theme.AnimePurple
@@ -91,31 +92,29 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
     }
 
     // Anchor scroll to selected day
-    val lazyListState =
-        androidx.compose.foundation.lazy
-            .rememberLazyListState()
+    val lazyListState = androidx.compose.foundation.lazy.rememberLazyListState()
     val sortedDates = remember(state.releases) { state.releases.keys.sorted() }
-    val selectedDayIndex =
-        remember(state.selectedDay, sortedDates) {
-            sortedDates.indexOfFirst { it == state.selectedDay }.coerceAtLeast(0)
-        }
+    val selectedDayIndex = remember(state.selectedDay, sortedDates) {
+        sortedDates.indexOfFirst { it == state.selectedDay }.coerceAtLeast(0)
+    }
     LaunchedEffect(state.selectedDay) {
         if (sortedDates.isNotEmpty()) lazyListState.animateScrollToItem(selectedDayIndex)
     }
 
-    Scaffold { paddingValues ->
+    Scaffold(
+        topBar = { TopBar(onRefresh = viewModel::onRefresh) }
+    ) { paddingValues ->
         Box(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .background(Background),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(Background),
         ) {
             PullToRefreshBox(
                 isRefreshing = state.isSyncing,
                 onRefresh = viewModel::onRefresh,
                 modifier = Modifier.fillMaxSize(),
-                indicator = {}, // Hide default spinner
+                indicator = {},
             ) {
                 Column(modifier = Modifier.fillMaxSize()) {
                     // Custom linear sync indicator using section colors
@@ -129,21 +128,20 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                     ContentTypeChips(
                         activeFilter = state.activeFilter,
                         onFilterSelected = viewModel::onFilterChanged,
-                        modifier =
-                            Modifier.pointerInput(Unit) {
-                                var totalDrag = 0f
-                                detectHorizontalDragGestures(
-                                    onDragEnd = {
-                                        if (totalDrag > 100) {
-                                            viewModel.onSwipeFilter(isNext = false)
-                                        } else if (totalDrag < -100) {
-                                            viewModel.onSwipeFilter(isNext = true)
-                                        }
-                                        totalDrag = 0f
-                                    },
-                                    onHorizontalDrag = { _, dragAmount -> totalDrag += dragAmount },
-                                )
-                            },
+                        modifier = Modifier.pointerInput(Unit) {
+                            var totalDrag = 0f
+                            detectHorizontalDragGestures(
+                                onDragEnd = {
+                                    if (totalDrag > 100) {
+                                        viewModel.onSwipeFilter(isNext = false)
+                                    } else if (totalDrag < -100) {
+                                        viewModel.onSwipeFilter(isNext = true)
+                                    }
+                                    totalDrag = 0f
+                                },
+                                onHorizontalDrag = { _, dragAmount -> totalDrag += dragAmount },
+                            )
+                        },
                     )
 
                     HorizontalDivider(color = Surface, thickness = 1.dp)
@@ -153,10 +151,9 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                         Text(
                             text = stringResource(R.string.error_prefix, error),
                             color = SeriesRed,
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .padding(Dimens.PaddingLarge),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(Dimens.PaddingLarge),
                             textAlign = TextAlign.Center,
                             fontSize = Dimens.FontNormal,
                         )
@@ -169,10 +166,9 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                             (fadeIn() + slideInHorizontally { it / 4 }) togetherWith (fadeOut() + slideOutHorizontally { -it / 4 })
                         },
                         label = "feedTransition",
-                        modifier =
-                            Modifier
-                                .weight(1f)
-                                .fillMaxWidth(),
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth(),
                     ) { filter ->
                         val flat = state.releases.values.flatten()
 
@@ -263,19 +259,16 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
 
             // Floating Week Scroller at the bottom
             Box(
-                modifier =
-                    Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(
-                            horizontal = Dimens.PaddingExtraLarge,
-                            vertical = Dimens.PaddingLarge
-                        )
-                        .shadow(
-                            elevation = 8.dp,
-                            shape = RoundedCornerShape(Dimens.FloatingBoxCornerRadius)
-                        )
-                        .background(SurfaceAlt, RoundedCornerShape(Dimens.FloatingBoxCornerRadius))
-                        .padding(vertical = Dimens.SpacingSmall),
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(
+                        horizontal = Dimens.PaddingExtraLarge, vertical = Dimens.PaddingLarge
+                    )
+                    .shadow(
+                        elevation = 8.dp, shape = RoundedCornerShape(Dimens.FloatingBoxCornerRadius)
+                    )
+                    .background(SurfaceAlt, RoundedCornerShape(Dimens.FloatingBoxCornerRadius))
+                    .padding(vertical = Dimens.SpacingSmall),
             ) {
                 WeekScroller(
                     weekStart = state.selectedWeekStart,
@@ -286,21 +279,20 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                     onDoubleTapDay = viewModel::onDoubleTapDay,
                     onPreviousClick = { viewModel.onSwipeDay(isNext = false) },
                     onNextClick = { viewModel.onSwipeDay(isNext = true) },
-                    modifier =
-                        Modifier.pointerInput(Unit) {
-                            var totalDrag = 0f
-                            detectHorizontalDragGestures(
-                                onDragEnd = {
-                                    if (totalDrag > 100) {
-                                        viewModel.onSwipeDay(isNext = false)
-                                    } else if (totalDrag < -100) {
-                                        viewModel.onSwipeDay(isNext = true)
-                                    }
-                                    totalDrag = 0f
-                                },
-                                onHorizontalDrag = { _, dragAmount -> totalDrag += dragAmount },
-                            )
-                        },
+                    modifier = Modifier.pointerInput(Unit) {
+                        var totalDrag = 0f
+                        detectHorizontalDragGestures(
+                            onDragEnd = {
+                                if (totalDrag > 100) {
+                                    viewModel.onSwipeDay(isNext = false)
+                                } else if (totalDrag < -100) {
+                                    viewModel.onSwipeDay(isNext = true)
+                                }
+                                totalDrag = 0f
+                            },
+                            onHorizontalDrag = { _, dragAmount -> totalDrag += dragAmount },
+                        )
+                    },
                 )
             }
 
@@ -333,11 +325,10 @@ private fun AppIconLoadingScreen() {
     val floatY by transition.animateFloat(
         initialValue = 0f,
         targetValue = -18f,
-        animationSpec =
-            infiniteRepeatable(
-                animation = tween(1600, easing = FastOutSlowInEasing),
-                repeatMode = RepeatMode.Reverse,
-            ),
+        animationSpec = infiniteRepeatable(
+            animation = tween(1600, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
         label = "floatY",
     )
 
@@ -345,53 +336,48 @@ private fun AppIconLoadingScreen() {
     val scale0 by transition.animateFloat(
         initialValue = 0.82f,
         targetValue = 1f,
-        animationSpec =
-            infiniteRepeatable(
-                tween(900, easing = FastOutSlowInEasing),
-                RepeatMode.Reverse,
-                StartOffset(0, StartOffsetType.FastForward),
-            ),
+        animationSpec = infiniteRepeatable(
+            tween(900, easing = FastOutSlowInEasing),
+            RepeatMode.Reverse,
+            StartOffset(0, StartOffsetType.FastForward),
+        ),
         label = "s0",
     )
     val scale1 by transition.animateFloat(
         initialValue = 0.82f,
         targetValue = 1f,
-        animationSpec =
-            infiniteRepeatable(
-                tween(900, easing = FastOutSlowInEasing),
-                RepeatMode.Reverse,
-                StartOffset(200, StartOffsetType.FastForward),
-            ),
+        animationSpec = infiniteRepeatable(
+            tween(900, easing = FastOutSlowInEasing),
+            RepeatMode.Reverse,
+            StartOffset(200, StartOffsetType.FastForward),
+        ),
         label = "s1",
     )
     val scale2 by transition.animateFloat(
         initialValue = 0.82f,
         targetValue = 1f,
-        animationSpec =
-            infiniteRepeatable(
-                tween(900, easing = FastOutSlowInEasing),
-                RepeatMode.Reverse,
-                StartOffset(400, StartOffsetType.FastForward),
-            ),
+        animationSpec = infiniteRepeatable(
+            tween(900, easing = FastOutSlowInEasing),
+            RepeatMode.Reverse,
+            StartOffset(400, StartOffsetType.FastForward),
+        ),
         label = "s2",
     )
     val scale3 by transition.animateFloat(
         initialValue = 0.82f,
         targetValue = 1f,
-        animationSpec =
-            infiniteRepeatable(
-                tween(900, easing = FastOutSlowInEasing),
-                RepeatMode.Reverse,
-                StartOffset(600, StartOffsetType.FastForward),
-            ),
+        animationSpec = infiniteRepeatable(
+            tween(900, easing = FastOutSlowInEasing),
+            RepeatMode.Reverse,
+            StartOffset(600, StartOffsetType.FastForward),
+        ),
         label = "s3",
     )
 
     Box(
-        modifier =
-            Modifier
-                .fillMaxSize()
-                .background(Background),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Background),
         contentAlignment = Alignment.Center,
     ) {
         Column(
@@ -439,14 +425,13 @@ private fun LoadingDot(
     scale: Float,
 ) {
     Box(
-        modifier =
-            Modifier
-                .size(Dimens.LoadingDotSize)
-                .graphicsLayer {
-                    scaleX = scale
-                    scaleY = scale
-                }
-                .background(color, CircleShape),
+        modifier = Modifier
+            .size(Dimens.LoadingDotSize)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .background(color, CircleShape),
     )
 }
 
@@ -456,38 +441,35 @@ private fun SyncProgressBar(modifier: Modifier = Modifier) {
     val xOffset by infiniteTransition.animateFloat(
         initialValue = -1f,
         targetValue = 1f,
-        animationSpec =
-            infiniteRepeatable(
-                animation = tween(1200, easing = LinearEasing),
-                repeatMode = RepeatMode.Restart,
-            ),
+        animationSpec = infiniteRepeatable(
+            animation = tween(1200, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart,
+        ),
         label = "xOffset",
     )
 
     Box(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .height(Dimens.ProgressBarHeight)
-                .background(Surface.copy(alpha = 0.1f)),
+        modifier = modifier
+            .fillMaxWidth()
+            .height(Dimens.ProgressBarHeight)
+            .background(Surface.copy(alpha = 0.1f)),
     ) {
         Box(
-            modifier =
-                Modifier
-                    .fillMaxWidth(0.7f)
-                    .fillMaxHeight()
-                    .graphicsLayer { translationX = size.width * xOffset }
-                    .background(
-                        Brush.horizontalGradient(
-                            listOf(
-                                MovieAmber.copy(alpha = 0f),
-                                MovieAmber,
-                                SeriesRed,
-                                AnimePurple,
-                                AnimePurple.copy(alpha = 0f),
-                            ),
+            modifier = Modifier
+                .fillMaxWidth(0.7f)
+                .fillMaxHeight()
+                .graphicsLayer { translationX = size.width * xOffset }
+                .background(
+                    Brush.horizontalGradient(
+                        listOf(
+                            MovieAmber.copy(alpha = 0f),
+                            MovieAmber,
+                            SeriesRed,
+                            AnimePurple,
+                            AnimePurple.copy(alpha = 0f),
                         ),
                     ),
+                ),
         )
     }
 }
