@@ -32,8 +32,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -46,17 +49,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kmno.dropdate.R
 import com.kmno.dropdate.domain.model.ReleaseType
 import com.kmno.dropdate.presentation.schedule.components.ContentTypeChips
 import com.kmno.dropdate.presentation.schedule.components.ReleaseCard
@@ -66,9 +71,11 @@ import com.kmno.dropdate.presentation.schedule.components.WeekScroller
 import com.kmno.dropdate.ui.theme.All
 import com.kmno.dropdate.ui.theme.AnimePurple
 import com.kmno.dropdate.ui.theme.Background
+import com.kmno.dropdate.ui.theme.Dimens
 import com.kmno.dropdate.ui.theme.MovieAmber
 import com.kmno.dropdate.ui.theme.SeriesRed
 import com.kmno.dropdate.ui.theme.Surface
+import com.kmno.dropdate.ui.theme.SurfaceAlt
 import com.kmno.dropdate.ui.theme.TextPrimary
 import com.kmno.dropdate.ui.theme.TextSecondary
 
@@ -118,35 +125,6 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                         Spacer(modifier = Modifier.height(3.dp))
                     }
 
-                    // Week scroller — sticky header
-                    WeekScroller(
-                        weekStart = state.selectedWeekStart,
-                        selectedDay = state.selectedDay,
-                        canGoBack = state.canGoBack,
-                        canGoForward = state.canGoForward,
-                        onDaySelected = viewModel::onDaySelected,
-                        onDoubleTapDay = viewModel::onDoubleTapDay,
-                        onPreviousClick = { viewModel.onSwipeDay(isNext = false) },
-                        onNextClick = { viewModel.onSwipeDay(isNext = true) },
-                        modifier =
-                            Modifier.pointerInput(Unit) {
-                                var totalDrag = 0f
-                                detectHorizontalDragGestures(
-                                    onDragEnd = {
-                                        if (totalDrag > 100) {
-                                            viewModel.onSwipeDay(isNext = false)
-                                        } else if (totalDrag < -100) {
-                                            viewModel.onSwipeDay(isNext = true)
-                                        }
-                                        totalDrag = 0f
-                                    },
-                                    onHorizontalDrag = { _, dragAmount -> totalDrag += dragAmount },
-                                )
-                            },
-                    )
-
-                    HorizontalDivider(color = Surface, thickness = 1.dp)
-
                     // Content type filter chips
                     ContentTypeChips(
                         activeFilter = state.activeFilter,
@@ -170,19 +148,17 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
 
                     HorizontalDivider(color = Surface, thickness = 1.dp)
 
-                    Spacer(Modifier.height(8.dp))
-
                     // Error display
                     state.error?.let { error ->
                         Text(
-                            text = "Error: $error",
+                            text = stringResource(R.string.error_prefix, error),
                             color = SeriesRed,
                             modifier =
                                 Modifier
                                     .fillMaxWidth()
-                                    .padding(16.dp),
+                                    .padding(Dimens.PaddingLarge),
                             textAlign = TextAlign.Center,
-                            fontSize = 14.sp,
+                            fontSize = Dimens.FontNormal,
                         )
                     }
 
@@ -206,10 +182,10 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                                 contentAlignment = Alignment.Center,
                             ) {
                                 Text(
-                                    text = "No releases found for this day.\nTry another date or pull to refresh.",
+                                    text = stringResource(R.string.no_releases_found),
                                     color = TextSecondary,
                                     textAlign = TextAlign.Center,
-                                    fontSize = 14.sp,
+                                    fontSize = Dimens.FontNormal,
                                 )
                             }
                         } else if (filter == ContentFilter.ALL) {
@@ -221,13 +197,13 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
 
                             LazyColumn(
                                 state = lazyListState,
-                                contentPadding = PaddingValues(bottom = 32.dp),
-                                verticalArrangement = Arrangement.spacedBy(16.dp),
+                                contentPadding = PaddingValues(bottom = 120.dp),
+                                verticalArrangement = Arrangement.spacedBy(Dimens.SpacingMedium),
                             ) {
                                 if (movies.isNotEmpty()) {
                                     item {
                                         ReleaseSection(
-                                            title = "Movies",
+                                            title = stringResource(R.string.filter_movies),
                                             accentColor = MovieAmber,
                                             releases = movies,
                                             onReleaseClick = viewModel::onReleaseSelected,
@@ -238,7 +214,7 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                                 if (series.isNotEmpty()) {
                                     item {
                                         ReleaseSection(
-                                            title = "Series",
+                                            title = stringResource(R.string.filter_series),
                                             accentColor = SeriesRed,
                                             releases = series,
                                             onReleaseClick = viewModel::onReleaseSelected,
@@ -249,7 +225,7 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                                 if (anime.isNotEmpty()) {
                                     item {
                                         ReleaseSection(
-                                            title = "Anime",
+                                            title = stringResource(R.string.filter_anime),
                                             accentColor = AnimePurple,
                                             releases = anime,
                                             onReleaseClick = viewModel::onReleaseSelected,
@@ -259,10 +235,17 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                                 }
                             }
                         } else {
-                            // Flat vertical list
-                            LazyColumn(
-                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                            // Lazy Grid of releases
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(2),
+                                contentPadding = PaddingValues(
+                                    start = Dimens.PaddingMedium,
+                                    end = Dimens.PaddingMedium,
+                                    top = Dimens.PaddingSmall,
+                                    bottom = 120.dp
+                                ),
+                                verticalArrangement = Arrangement.spacedBy(Dimens.SpacingNormal),
+                                horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingNormal),
                             ) {
                                 itemsIndexed(flat, key = { _, r -> r.id }) { index, release ->
                                     ReleaseCard(
@@ -276,6 +259,49 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                         }
                     }
                 }
+            } // end PullToRefreshBox
+
+            // Floating Week Scroller at the bottom
+            Box(
+                modifier =
+                    Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(
+                            horizontal = Dimens.PaddingExtraLarge,
+                            vertical = Dimens.PaddingLarge
+                        )
+                        .shadow(
+                            elevation = 8.dp,
+                            shape = RoundedCornerShape(Dimens.FloatingBoxCornerRadius)
+                        )
+                        .background(SurfaceAlt, RoundedCornerShape(Dimens.FloatingBoxCornerRadius))
+                        .padding(vertical = Dimens.SpacingSmall),
+            ) {
+                WeekScroller(
+                    weekStart = state.selectedWeekStart,
+                    selectedDay = state.selectedDay,
+                    canGoBack = state.canGoBack,
+                    canGoForward = state.canGoForward,
+                    onDaySelected = viewModel::onDaySelected,
+                    onDoubleTapDay = viewModel::onDoubleTapDay,
+                    onPreviousClick = { viewModel.onSwipeDay(isNext = false) },
+                    onNextClick = { viewModel.onSwipeDay(isNext = true) },
+                    modifier =
+                        Modifier.pointerInput(Unit) {
+                            var totalDrag = 0f
+                            detectHorizontalDragGestures(
+                                onDragEnd = {
+                                    if (totalDrag > 100) {
+                                        viewModel.onSwipeDay(isNext = false)
+                                    } else if (totalDrag < -100) {
+                                        viewModel.onSwipeDay(isNext = true)
+                                    }
+                                    totalDrag = 0f
+                                },
+                                onHorizontalDrag = { _, dragAmount -> totalDrag += dragAmount },
+                            )
+                        },
+                )
             }
 
             // Detail bottom sheet
@@ -375,20 +401,20 @@ private fun AppIconLoadingScreen() {
             // 2×2 icon — mirrors the launcher icon layout
             Column(
                 modifier = Modifier.graphicsLayer { translationY = floatY },
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+                verticalArrangement = Arrangement.spacedBy(Dimens.PaddingSmall),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Dimens.PaddingSmall)) {
                     LoadingDot(color = All, scale = scale0) // top-left  — blue
                     LoadingDot(color = MovieAmber, scale = scale1) // top-right — amber
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(Dimens.PaddingSmall)) {
                     LoadingDot(color = SeriesRed, scale = scale2) // bot-left  — red
                     LoadingDot(color = AnimePurple, scale = scale3) // bot-right — purple
                 }
             }
 
-            Spacer(Modifier.height(28.dp))
+            Spacer(Modifier.height(Dimens.PaddingLarge + 4.dp))
 
             Text(
                 text = "DropDate",
@@ -396,10 +422,10 @@ private fun AppIconLoadingScreen() {
                 color = TextPrimary,
             )
 
-            Spacer(Modifier.height(6.dp))
+            Spacer(Modifier.height(Dimens.SpacingMedium))
 
             Text(
-                text = "Fetching this week's releases…",
+                text = stringResource(R.string.fetching_releases),
                 style = MaterialTheme.typography.bodySmall,
                 color = TextSecondary,
             )
@@ -415,7 +441,7 @@ private fun LoadingDot(
     Box(
         modifier =
             Modifier
-                .size(44.dp)
+                .size(Dimens.LoadingDotSize)
                 .graphicsLayer {
                     scaleX = scale
                     scaleY = scale
@@ -442,7 +468,7 @@ private fun SyncProgressBar(modifier: Modifier = Modifier) {
         modifier =
             modifier
                 .fillMaxWidth()
-                .height(3.dp)
+                .height(Dimens.ProgressBarHeight)
                 .background(Surface.copy(alpha = 0.1f)),
     ) {
         Box(

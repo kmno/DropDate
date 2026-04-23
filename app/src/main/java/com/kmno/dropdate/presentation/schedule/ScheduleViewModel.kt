@@ -10,10 +10,12 @@ import com.kmno.dropdate.domain.usecase.GetWeekReleasesUseCase
 import com.kmno.dropdate.domain.usecase.SyncReleasesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -23,7 +25,7 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import javax.inject.Inject
 
-@OptIn(ExperimentalCoroutinesApi::class)
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 @HiltViewModel
 class ScheduleViewModel
 @Inject
@@ -55,6 +57,7 @@ constructor(
             _state
                 .map { Triple(it.selectedWeekStart, it.selectedDay, it.activeFilter) }
                 .distinctUntilChanged()
+                .debounce(timeoutMillis = 200)
                 .flatMapLatest { (weekStart, selectedDay, filter) ->
                     _state.update { it.copy(isLoading = true) }
                     getWeekReleases(weekStart, weekStart.plusDays(6))
@@ -93,7 +96,7 @@ constructor(
     }
 
     fun onDaySelected(day: LocalDate) {
-        if (day < minDay || day > maxDay) return
+        if (day !in minDay..maxDay) return
         _state.update {
             it.copy(
                 selectedDay = day,
@@ -104,7 +107,7 @@ constructor(
     }
 
     fun onDoubleTapDay(day: LocalDate) {
-        if (day < minDay || day > maxDay) return
+        if (day !in minDay..maxDay) return
         val newWeekStart = day.minusDays(3)
         _state.update {
             it.copy(

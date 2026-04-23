@@ -72,7 +72,7 @@ constructor(
                         .map { i ->
                             async {
                                 tvMazeApi.getStreamingSchedule(
-                                    weekStart.plusDays(i.toLong()).toString()
+                                    weekStart.plusDays(i.toLong()).toString(),
                                 )
                             }
                         }.awaitAll()
@@ -86,8 +86,8 @@ constructor(
                         aniListApi.getAnimeSchedule(
                             aniListScheduleQuery(
                                 weekStartUnix,
-                                weekEndUnix
-                            )
+                                weekEndUnix,
+                            ),
                         )
                     }
 

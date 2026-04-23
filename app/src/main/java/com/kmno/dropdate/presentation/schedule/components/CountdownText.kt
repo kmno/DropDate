@@ -28,10 +28,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.kmno.dropdate.R
+import com.kmno.dropdate.ui.theme.Dimens
 import com.kmno.dropdate.ui.theme.DropDateTheme
 import com.kmno.dropdate.ui.theme.TextPrimary
 import com.kmno.dropdate.ui.theme.TextSecondary
@@ -79,19 +80,20 @@ fun CountdownText(
 
     val labelText =
         when {
-            days > 1 -> "Drops in $days days"
-            days == 1 -> "Drops tomorrow"
-            hours > 0 -> "Drops in ${hours}h ${minutes}m"
-            minutes > 0 -> "Drops in ${minutes}m"
-            else -> "Drops in < 1m"
+            days > 1 -> stringResource(R.string.drops_in_days, days)
+            days == 1 -> stringResource(R.string.drops_tomorrow)
+            hours > 0 -> stringResource(R.string.drops_in_hours_minutes, hours, minutes)
+            minutes > 0 -> stringResource(R.string.drops_in_minutes, minutes)
+            else -> stringResource(R.string.drops_in_less_than_minute)
         }
 
     val dateFormatter = remember { DateTimeFormatter.ofPattern("MMM dd, yyyy") }
     val timeFormatter = remember { DateTimeFormatter.ofPattern("hh:mm a") }
+    val tbdText = stringResource(R.string.time_tbd)
     val exactDateText =
-        remember(airDate, airTime) {
+        remember(airDate, airTime, tbdText) {
             val datePart = airDate.format(dateFormatter)
-            val timePart = "• ${airTime?.format(timeFormatter) ?: "Time TBD"}"
+            val timePart = "• ${airTime?.format(timeFormatter) ?: tbdText}"
             "$datePart $timePart"
         }
 
@@ -116,11 +118,11 @@ fun CountdownText(
                 contentDescription = null,
                 modifier =
                     Modifier
-                        .size(16.dp)
+                        .size(Dimens.IconSmall)
                         .graphicsLayer(rotationZ = rotation),
-                tint = TextSecondary,
+                tint = TextPrimary,
             )
-            Spacer(modifier = Modifier.width(13.dp))
+            Spacer(modifier = Modifier.width(Dimens.SpacingNormal))
         }
 
         Column {
@@ -133,7 +135,7 @@ fun CountdownText(
             ) { text ->
                 Text(
                     text = text,
-                    fontSize = 12.sp,
+                    fontSize = Dimens.FontNormal,
                     fontWeight =
                         if (showDetails) {
                             FontWeight.SemiBold
@@ -146,7 +148,7 @@ fun CountdownText(
             if (showDetails) {
                 Text(
                     text = exactDateText,
-                    fontSize = 10.sp,
+                    fontSize = Dimens.FontExtraSmall,
                     fontWeight = FontWeight.Medium,
                     color = TextSecondary,
                 )

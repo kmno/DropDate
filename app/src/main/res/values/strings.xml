@@ -1,3 +1,26 @@
 <resources>
     <string name="app_name">DropDate</string>
+
+    <!-- Schedule Screen -->
+    <string name="no_releases_found">No releases found for this day.\nTry another date or pull to refresh.</string>
+    <string name="error_prefix">Error: %1$s</string>
+    <string name="fetching_releases">Fetching this week\'s releases…</string>
+
+    <!-- Content Types -->
+    <string name="filter_all">All</string>
+    <string name="filter_movies">Movies</string>
+    <string name="filter_series">Series</string>
+    <string name="filter_anime">Anime</string>
+
+    <!-- Countdown -->
+    <string name="drops_in_days">Drops in %1$d days</string>
+    <string name="drops_tomorrow">Drops tomorrow</string>
+    <string name="drops_in_hours_minutes">Drops in %1$dh %2$dm</string>
+    <string name="drops_in_minutes">Drops in %1$dm</string>
+    <string name="drops_in_less_than_minute">Drops in &lt; 1m</string>
+    <string name="time_tbd">Time TBD</string>
+
+    <!-- Accessibility -->
+    <string name="prev_day">Previous Day</string>
+    <string name="next_day">Next Day</string>
 </resources>

@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import com.kmno.dropdate.domain.model.Release
 import com.kmno.dropdate.domain.model.ReleaseStatus
 import com.kmno.dropdate.domain.model.ReleaseType
+import com.kmno.dropdate.ui.theme.Dimens
 import com.kmno.dropdate.ui.theme.DropDateTheme
 import com.kmno.dropdate.ui.theme.MovieAmber
 import com.kmno.dropdate.ui.theme.TextSecondary
@@ -65,19 +66,19 @@ fun ReleaseSection(
                 modifier =
                     Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                        .padding(horizontal = Dimens.PaddingMedium, vertical = Dimens.PaddingSmall),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 // Colored dot
                 Box(
                     modifier =
                         Modifier
-                            .size(8.dp)
+                            .size(Dimens.PaddingSmall)
                             .clip(CircleShape)
                             .background(accentColor),
                 )
 
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(Dimens.SpacingMedium))
 
                 Text(
                     text = title,
@@ -86,12 +87,12 @@ fun ReleaseSection(
                     color = accentColor,
                 )
 
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(Dimens.SpacingMedium))
 
                 // Items count (less focus)
                 Text(
                     text = "(${releases.size})",
-                    fontSize = 12.sp,
+                    fontSize = Dimens.FontSmall,
                     color = TextSecondary.copy(alpha = 0.6f),
                     fontWeight = FontWeight.Medium,
                 )
@@ -104,7 +105,7 @@ fun ReleaseSection(
                     contentDescription = "More $title",
                     modifier =
                         Modifier
-                            .size(20.dp)
+                            .size(Dimens.IconMedium)
                             .clickable { onMoreClick() },
                     tint = TextSecondary,
                 )
@@ -112,8 +113,8 @@ fun ReleaseSection(
         }
 
         LazyRow(
-            contentPadding = PaddingValues(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            contentPadding = PaddingValues(horizontal = Dimens.PaddingMedium),
+            horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingMedium + 2.dp),
         ) {
             itemsIndexed(releases, key = { _, r -> r.id }) { index, release ->
                 ReleaseCard(
