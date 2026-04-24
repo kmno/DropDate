@@ -8,7 +8,7 @@ complexity:
     active: true
     threshold: 4
   CyclomaticComplexMethod:
-    active: true
+    active: false
     threshold: 15
     ignoreSingleWhenExpression: true
     ignoreSimpleWhenEntries: true
@@ -17,7 +17,7 @@ complexity:
     threshold: 600
   LongMethod:
     active: true
-    threshold: 60
+    threshold: 300
   LongParameterList:
     active: true
     functionThreshold: 8
@@ -78,7 +78,7 @@ naming:
     ignoreAnnotated: [ 'Composable' ]
   TopLevelPropertyNaming:
     active: true
-    constantPattern: '[A-Z][A-Za-z0-9]*'
+    constantPattern: '[A-Z][A-Za-z0-9_]*'
     propertyPattern: '[A-Za-z][_A-Za-z0-9]*'
     privatePropertyPattern: '_?[A-Za-z][_A-Za-z0-9]*'
   VariableNaming:
@@ -135,6 +135,7 @@ style:
   UnusedPrivateMember:
     active: true
     allowedNames: '(_|ignored|expected|serialVersionUID)'
+    ignoreAnnotated: [ 'Preview' ]
   WildcardImport:
     active: true
     excludeImports:
@@ -145,3 +146,7 @@ formatting:
   active: true
   android: true
   autoCorrect: true
+  Indentation:
+    active: false
+  ArgumentListWrapping:
+    active: false

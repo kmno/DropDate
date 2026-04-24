@@ -83,172 +83,171 @@ private val POPULAR_PLATFORMS =
         "crunchyroll",
     )
 
-private fun String.isPopularStreamer() =
-    lowercase().let { l -> POPULAR_PLATFORMS.any { l.contains(it) } }
+private fun String.isPopularStreamer() = lowercase().let { l -> POPULAR_PLATFORMS.any { l.contains(it) } }
 
 private fun String.isEnglish() = lowercase().let { it == "english" }
 
 private fun String.isScripted() = lowercase() == "scripted"
 
 class ReleaseMapper
-@Inject
-constructor() {
-    // ── Movies (TMDB) ────────────────────────────────────────────────────────
+    @Inject
+    constructor() {
+        // ── Movies (TMDB) ────────────────────────────────────────────────────────
 
-    fun fromTmdb(
-        movies: TmdbMovieListDto,
-        upcomingMovies: TmdbMovieListDto,
-        tvShows: TmdbTvListDto,
-    ): List<ReleaseEntity> {
-        val seen = mutableSetOf<String>()
-        val now = System.currentTimeMillis()
+        fun fromTmdb(
+            movies: TmdbMovieListDto,
+            upcomingMovies: TmdbMovieListDto,
+            tvShows: TmdbTvListDto,
+        ): List<ReleaseEntity> {
+            val seen = mutableSetOf<String>()
+            val now = System.currentTimeMillis()
 
-        val movieEntities =
-            movies.results
-                .filter { "tmdb_m_${it.id}" !in seen && seen.add("tmdb_m_${it.id}") }
-                .mapNotNull { dto ->
-                    val dateStr =
-                        dto.releaseDate?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
-                    val date = parseLocalDate(dateStr) ?: return@mapNotNull null
-                    ReleaseEntity(
-                        id = "tmdb_m_${dto.id}",
-                        title = dto.title,
-                        posterUrl = dto.posterPath?.let { "$TMDB_IMAGE_BASE$TMDB_POSTER_SIZE$it" },
-                        backdropUrl = dto.backdropPath?.let { "$TMDB_IMAGE_BASE$TMDB_BACKDROP_SIZE$it" },
-                        type = ReleaseType.MOVIE.name,
-                        status = releaseStatus(date),
-                        airDate = dateStr,
-                        airTime = null,
-                        platform = null,
-                        episodeLabel = null,
-                        rating = dto.voteAverage,
-                        synopsis = dto.overview,
-                        genres =
-                            dto.genreIds
-                                .mapNotNull { TMDB_MOVIE_GENRES[it] }
-                                .joinToString(",")
-                                .takeIf { it.isNotBlank() },
-                        syncedAt = now,
+            val movieEntities =
+                movies.results
+                    .filter { "tmdb_m_${it.id}" !in seen && seen.add("tmdb_m_${it.id}") }
+                    .mapNotNull { dto ->
+                        val dateStr =
+                            dto.releaseDate?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+                        val date = parseLocalDate(dateStr) ?: return@mapNotNull null
+                        ReleaseEntity(
+                            id = "tmdb_m_${dto.id}",
+                            title = dto.title,
+                            posterUrl = dto.posterPath?.let { "$TMDB_IMAGE_BASE$TMDB_POSTER_SIZE$it" },
+                            backdropUrl = dto.backdropPath?.let { "$TMDB_IMAGE_BASE$TMDB_BACKDROP_SIZE$it" },
+                            type = ReleaseType.MOVIE.name,
+                            status = releaseStatus(date),
+                            airDate = dateStr,
+                            airTime = null,
+                            platform = null,
+                            episodeLabel = null,
+                            rating = dto.voteAverage,
+                            synopsis = dto.overview,
+                            genres =
+                                dto.genreIds
+                                    .mapNotNull { TMDB_MOVIE_GENRES[it] }
+                                    .joinToString(",")
+                                    .takeIf { it.isNotBlank() },
+                            syncedAt = now,
+                        )
+                    }
+
+            val uMovieEntities =
+                upcomingMovies.results
+                    .filter { "tmdb_m_${it.id}" !in seen && seen.add("tmdb_m_${it.id}") }
+                    .mapNotNull { dto ->
+                        val dateStr =
+                            dto.releaseDate?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+                        val date = parseLocalDate(dateStr) ?: return@mapNotNull null
+                        ReleaseEntity(
+                            id = "tmdb_m_${dto.id}",
+                            title = dto.title,
+                            posterUrl = dto.posterPath?.let { "$TMDB_IMAGE_BASE$TMDB_POSTER_SIZE$it" },
+                            backdropUrl = dto.backdropPath?.let { "$TMDB_IMAGE_BASE$TMDB_BACKDROP_SIZE$it" },
+                            type = ReleaseType.MOVIE.name,
+                            status = releaseStatus(date),
+                            airDate = dateStr,
+                            airTime = null,
+                            platform = null,
+                            episodeLabel = null,
+                            rating = dto.voteAverage,
+                            synopsis = dto.overview,
+                            genres =
+                                dto.genreIds
+                                    .mapNotNull { TMDB_MOVIE_GENRES[it] }
+                                    .joinToString(",")
+                                    .takeIf { it.isNotBlank() },
+                            syncedAt = now,
+                        )
+                    }
+
+            val tvEntities =
+                tvShows.results
+                    .filter { "tmdb_t_${it.id}" !in seen && seen.add("tmdb_t_${it.id}") }
+                    .mapNotNull { dto ->
+                        val dateStr =
+                            dto.firstAirDate?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+                        val date = parseLocalDate(dateStr) ?: return@mapNotNull null
+                        ReleaseEntity(
+                            id = "tmdb_t_${dto.id}",
+                            title = dto.name,
+                            posterUrl = dto.posterPath?.let { "$TMDB_IMAGE_BASE$TMDB_POSTER_SIZE$it" },
+                            backdropUrl = dto.backdropPath?.let { "$TMDB_IMAGE_BASE$TMDB_BACKDROP_SIZE$it" },
+                            type = ReleaseType.SERIES.name,
+                            status = releaseStatus(date),
+                            airDate = dateStr,
+                            airTime = null,
+                            platform = null,
+                            episodeLabel = null,
+                            rating = dto.voteAverage,
+                            synopsis = dto.overview,
+                            genres =
+                                dto.genreIds
+                                    .mapNotNull { TMDB_TV_GENRES[it] }
+                                    .joinToString(",")
+                                    .takeIf { it.isNotBlank() },
+                            syncedAt = now,
+                        )
+                    }
+            return movieEntities + uMovieEntities + tvEntities
+        }
+
+        // ── TV Series (TVMaze) ──────────────────────────────────────────────────
+
+        fun fromTvMaze(entries: List<TvMazeScheduleEntryDto>): List<ReleaseEntity> {
+            val now = System.currentTimeMillis()
+            return entries
+                .filter { entry ->
+                    val show = entry.show ?: return@filter false
+                    val isPopular = (
+                        show.network?.name?.isPopularStreamer() == true ||
+                            show.webChannel?.name?.isPopularStreamer() == true
                     )
+                    val isEnglish = show.language?.isEnglish() == true
+                    val isScripted = show.type.isScripted()
+                    isPopular && isEnglish && isScripted
                 }
-
-        val uMovieEntities =
-            upcomingMovies.results
-                .filter { "tmdb_m_${it.id}" !in seen && seen.add("tmdb_m_${it.id}") }
-                .mapNotNull { dto ->
-                    val dateStr =
-                        dto.releaseDate?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+                // Group by show + airdate: same-day multi-episode drops become one row
+                .groupBy { "${it.show!!.id}_${it.airdate}" }
+                .mapNotNull { (_, group) ->
+                    val first = group.first()
+                    val show = first.show ?: return@mapNotNull null
+                    val dateStr = first.airdate ?: return@mapNotNull null
                     val date = parseLocalDate(dateStr) ?: return@mapNotNull null
-                    ReleaseEntity(
-                        id = "tmdb_m_${dto.id}",
-                        title = dto.title,
-                        posterUrl = dto.posterPath?.let { "$TMDB_IMAGE_BASE$TMDB_POSTER_SIZE$it" },
-                        backdropUrl = dto.backdropPath?.let { "$TMDB_IMAGE_BASE$TMDB_BACKDROP_SIZE$it" },
-                        type = ReleaseType.MOVIE.name,
-                        status = releaseStatus(date),
-                        airDate = dateStr,
-                        airTime = null,
-                        platform = null,
-                        episodeLabel = null,
-                        rating = dto.voteAverage,
-                        synopsis = dto.overview,
-                        genres =
-                            dto.genreIds
-                                .mapNotNull { TMDB_MOVIE_GENRES[it] }
-                                .joinToString(",")
-                                .takeIf { it.isNotBlank() },
-                        syncedAt = now,
-                    )
-                }
 
-        val tvEntities =
-            tvShows.results
-                .filter { "tmdb_t_${it.id}" !in seen && seen.add("tmdb_t_${it.id}") }
-                .mapNotNull { dto ->
-                    val dateStr =
-                        dto.firstAirDate?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
-                    val date = parseLocalDate(dateStr) ?: return@mapNotNull null
+                    val episodeLabel =
+                        if (group.size == 1) {
+                            if (first.season != null && first.number != null) {
+                                "S%02d · E%02d".format(first.season, first.number)
+                            } else {
+                                null
+                            }
+                        } else {
+                            val season = group.mapNotNull { it.season }.distinct().singleOrNull()
+                            if (season != null) {
+                                "S$season · ${group.size} eps (all)"
+                            } else {
+                                "${group.size} eps (all)"
+                            }
+                        }
+
                     ReleaseEntity(
-                        id = "tmdb_t_${dto.id}",
-                        title = dto.name,
-                        posterUrl = dto.posterPath?.let { "$TMDB_IMAGE_BASE$TMDB_POSTER_SIZE$it" },
-                        backdropUrl = dto.backdropPath?.let { "$TMDB_IMAGE_BASE$TMDB_BACKDROP_SIZE$it" },
+                        id = "tvmaze_${show.id}_$dateStr",
+                        title = show.name,
+                        posterUrl = show.image?.original ?: show.image?.medium,
+                        backdropUrl = show.image?.original ?: show.image?.medium,
                         type = ReleaseType.SERIES.name,
                         status = releaseStatus(date),
                         airDate = dateStr,
-                        airTime = null,
-                        platform = null,
-                        episodeLabel = null,
-                        rating = dto.voteAverage,
-                        synopsis = dto.overview,
-                        genres =
-                            dto.genreIds
-                                .mapNotNull { TMDB_TV_GENRES[it] }
-                                .joinToString(",")
-                                .takeIf { it.isNotBlank() },
+                        airTime = if (group.size == 1) first.airtime else null,
+                        platform = show.network?.name ?: show.webChannel?.name,
+                        episodeLabel = episodeLabel,
+                        rating = show.rating?.average?.let { it * 1f },
+                        synopsis = show.summary?.replace(Regex("<.*?>"), ""),
+                        genres = show.genres.joinToString(",").takeIf { it.isNotBlank() },
                         syncedAt = now,
                     )
                 }
-        return movieEntities + uMovieEntities + tvEntities
-    }
-
-    // ── TV Series (TVMaze) ──────────────────────────────────────────────────
-
-    fun fromTvMaze(entries: List<TvMazeScheduleEntryDto>): List<ReleaseEntity> {
-        val now = System.currentTimeMillis()
-        return entries
-            .filter { entry ->
-                val show = entry.show ?: return@filter false
-                val isPopular = (
-                        show.network?.name?.isPopularStreamer() == true ||
-                                show.webChannel?.name?.isPopularStreamer() == true
-                        )
-                val isEnglish = show.language?.isEnglish() == true
-                val isScripted = show.type.isScripted()
-                isPopular && isEnglish && isScripted
-            }
-            // Group by show + airdate: same-day multi-episode drops become one row
-            .groupBy { "${it.show!!.id}_${it.airdate}" }
-            .mapNotNull { (_, group) ->
-                val first = group.first()
-                val show = first.show ?: return@mapNotNull null
-                val dateStr = first.airdate ?: return@mapNotNull null
-                val date = parseLocalDate(dateStr) ?: return@mapNotNull null
-
-                val episodeLabel =
-                    if (group.size == 1) {
-                        if (first.season != null && first.number != null) {
-                            "S%02dE%02d".format(first.season, first.number)
-                        } else {
-                            null
-                        }
-                    } else {
-                        val season = group.mapNotNull { it.season }.distinct().singleOrNull()
-                        if (season != null) {
-                            "S$season · ${group.size} eps"
-                        } else {
-                            "${group.size} eps"
-                        }
-                    }
-
-                ReleaseEntity(
-                    id = "tvmaze_${show.id}_$dateStr",
-                    title = show.name,
-                    posterUrl = show.image?.original ?: show.image?.medium,
-                    backdropUrl = show.image?.original ?: show.image?.medium,
-                    type = ReleaseType.SERIES.name,
-                    status = releaseStatus(date),
-                    airDate = dateStr,
-                    airTime = if (group.size == 1) first.airtime else null,
-                    platform = show.network?.name ?: show.webChannel?.name,
-                    episodeLabel = episodeLabel,
-                    rating = show.rating?.average?.let { it * 1f },
-                    synopsis = show.summary?.replace(Regex("<.*?>"), ""),
-                    genres = show.genres.joinToString(",").takeIf { it.isNotBlank() },
-                    syncedAt = now,
-                )
-            }
-    }
+        }
 
     /*
         // ── Anticipated (Trakt + TMDB images) ───────────────────────────────────
@@ -310,89 +309,89 @@ constructor() {
         }
      */
 
-    // ── Anime (AniList airingSchedules) ─────────────────────────────────────
+        // ── Anime (AniList airingSchedules) ─────────────────────────────────────
 
-    fun fromAniList(response: AniListResponse): List<ReleaseEntity> {
-        val now = System.currentTimeMillis()
-        val today = LocalDate.now()
-        return response.data
-            ?.page
-            ?.airingSchedules
-            .orEmpty()
-            .mapNotNull { entry ->
-                val media = entry.media ?: return@mapNotNull null
-                val title =
-                    media.title?.english?.takeIf { it.isNotBlank() }
-                        ?: media.title?.romaji
-                        ?: return@mapNotNull null
-                val date =
-                    Instant
-                        .ofEpochSecond(entry.airingAt)
-                        .atZone(ZoneOffset.UTC)
-                        .toLocalDate()
-                val dateStr = date.toString()
-                val status =
-                    if (date.isAfter(today)) {
-                        ReleaseStatus.UPCOMING.name
-                    } else {
-                        ReleaseStatus.RELEASED.name
-                    }
-                val platform =
-                    media.externalLinks
-                        .firstOrNull { it.site?.isPopularStreamer() == true }
-                        ?.site
-                ReleaseEntity(
-                    id = "anilist_${media.id}_${dateStr}_ep${entry.episode}",
-                    title = title,
-                    posterUrl = media.coverImage?.large,
-                    backdropUrl = media.coverImage?.large,
-                    type = ReleaseType.ANIME.name,
-                    status = status,
-                    airDate = dateStr,
-                    airTime = null,
-                    platform = platform,
-                    episodeLabel = "Ep ${entry.episode}",
-                    rating = media.averageScore?.let { it / 10f },
-                    synopsis = media.description?.replace(Regex("<.*?>"), ""),
-                    genres =
-                        media.genres
-                            .map { genre ->
-                                if (genre == "Hentai") "$genre (+18)" else genre
-                            }.joinToString(",")
-                            .takeIf { it.isNotBlank() },
-                    syncedAt = now,
-                )
+        fun fromAniList(response: AniListResponse): List<ReleaseEntity> {
+            val now = System.currentTimeMillis()
+            val today = LocalDate.now()
+            return response.data
+                ?.page
+                ?.airingSchedules
+                .orEmpty()
+                .mapNotNull { entry ->
+                    val media = entry.media ?: return@mapNotNull null
+                    val title =
+                        media.title?.english?.takeIf { it.isNotBlank() }
+                            ?: media.title?.romaji
+                            ?: return@mapNotNull null
+                    val date =
+                        Instant
+                            .ofEpochSecond(entry.airingAt)
+                            .atZone(ZoneOffset.UTC)
+                            .toLocalDate()
+                    val dateStr = date.toString()
+                    val status =
+                        if (date.isAfter(today)) {
+                            ReleaseStatus.UPCOMING.name
+                        } else {
+                            ReleaseStatus.RELEASED.name
+                        }
+                    val platform =
+                        media.externalLinks
+                            .firstOrNull { it.site?.isPopularStreamer() == true }
+                            ?.site
+                    ReleaseEntity(
+                        id = "anilist_${media.id}_${dateStr}_ep${entry.episode}",
+                        title = title,
+                        posterUrl = media.coverImage?.large,
+                        backdropUrl = media.coverImage?.large,
+                        type = ReleaseType.ANIME.name,
+                        status = status,
+                        airDate = dateStr,
+                        airTime = null,
+                        platform = platform,
+                        episodeLabel = "Ep ${entry.episode}",
+                        rating = media.averageScore?.let { it / 10f },
+                        synopsis = media.description?.replace(Regex("<.*?>"), ""),
+                        genres =
+                            media.genres
+                                .map { genre ->
+                                    if (genre == "Hentai") "$genre \uD83D\uDD1E" else genre
+                                }.joinToString(",")
+                                .takeIf { it.isNotBlank() },
+                        syncedAt = now,
+                    )
+                }
+        }
+
+        // ── Domain mapping ───────────────────────────────────────────────────────
+
+        fun toDomain(entity: ReleaseEntity): Release =
+            Release(
+                id = entity.id,
+                title = entity.title,
+                posterUrl = entity.posterUrl,
+                backdropUrl = entity.backdropUrl,
+                type = ReleaseType.valueOf(entity.type),
+                status = ReleaseStatus.valueOf(entity.status),
+                airDate = LocalDate.parse(entity.airDate),
+                airTime = entity.airTime?.let { runCatching { LocalTime.parse(it) }.getOrNull() },
+                platform = entity.platform,
+                episodeLabel = entity.episodeLabel,
+                rating = entity.rating,
+                synopsis = entity.synopsis,
+                genres = entity.genres?.split(",")?.filter { it.isNotBlank() } ?: emptyList(),
+            )
+
+        // ── Helpers ──────────────────────────────────────────────────────────────
+
+        private fun releaseStatus(date: LocalDate) =
+            if (date.isAfter(LocalDate.now())) ReleaseStatus.UPCOMING.name else ReleaseStatus.RELEASED.name
+
+        private fun parseLocalDate(value: String): LocalDate? =
+            try {
+                LocalDate.parse(value.take(10))
+            } catch (_: DateTimeParseException) {
+                null
             }
     }
-
-    // ── Domain mapping ───────────────────────────────────────────────────────
-
-    fun toDomain(entity: ReleaseEntity): Release =
-        Release(
-            id = entity.id,
-            title = entity.title,
-            posterUrl = entity.posterUrl,
-            backdropUrl = entity.backdropUrl,
-            type = ReleaseType.valueOf(entity.type),
-            status = ReleaseStatus.valueOf(entity.status),
-            airDate = LocalDate.parse(entity.airDate),
-            airTime = entity.airTime?.let { runCatching { LocalTime.parse(it) }.getOrNull() },
-            platform = entity.platform,
-            episodeLabel = entity.episodeLabel,
-            rating = entity.rating,
-            synopsis = entity.synopsis,
-            genres = entity.genres?.split(",")?.filter { it.isNotBlank() } ?: emptyList(),
-        )
-
-    // ── Helpers ──────────────────────────────────────────────────────────────
-
-    private fun releaseStatus(date: LocalDate) =
-        if (date.isAfter(LocalDate.now())) ReleaseStatus.UPCOMING.name else ReleaseStatus.RELEASED.name
-
-    private fun parseLocalDate(value: String): LocalDate? =
-        try {
-            LocalDate.parse(value.take(10))
-        } catch (_: DateTimeParseException) {
-            null
-        }
-}

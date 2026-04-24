@@ -151,9 +151,12 @@ fun ReleaseDetailSheet(
                     buildString {
                         release.airDate.year.let { append("$it") }
                         release.episodeLabel?.let { append(" · $it") }
-                        if (release.genres.isNotEmpty()) {
-                            append(" · ${release.genres.joinToString(", ")}")
-                        }
+                    }
+                val genres =
+                    if (release.genres.isNotEmpty()) {
+                        release.genres.joinToString(", ")
+                    } else {
+                        ""
                     }
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
@@ -161,13 +164,20 @@ fun ReleaseDetailSheet(
                             release.type.name
                                 .lowercase()
                                 .replaceFirstChar { it.uppercase() },
-                        fontSize = 13.sp,
+                        fontSize = Dimens.FontNormal,
                         fontWeight = FontWeight.SemiBold,
                         color = accentColor,
                     )
                     if (metaRemainder.isNotBlank()) {
-                        Text(text = " · $metaRemainder", fontSize = 13.sp, color = TextSecondary)
+                        Text(
+                            text = " · $metaRemainder",
+                            fontSize = Dimens.FontSmall,
+                            color = TextSecondary,
+                        )
                     }
+                }
+                if (genres.isNotBlank()) {
+                    Text(text = genres, fontSize = Dimens.FontSmall, color = TextSecondary)
                 }
 
                 Spacer(Modifier.height(Dimens.SpacingMedium))
