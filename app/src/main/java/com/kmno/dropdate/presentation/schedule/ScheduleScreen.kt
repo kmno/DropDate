@@ -177,17 +177,19 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                     AnimatedContent(
                         targetState = state.activeFilter,
                         transitionSpec = {
+                            val direction =
+                                if (targetState.ordinal > initialState.ordinal) 1 else -1
                             (
                                 fadeIn(animationSpec = tween(220, delayMillis = 90)) +
                                     slideInHorizontally(
-                                        initialOffsetX = { it / 4 },
+                                        initialOffsetX = { direction * it / 4 },
                                         animationSpec = tween(220, delayMillis = 90),
                                     )
                             ) togetherWith
                                 (
                                     fadeOut(animationSpec = tween(90)) +
                                         slideOutHorizontally(
-                                            targetOffsetX = { -it / 4 },
+                                            targetOffsetX = { -direction * it / 4 },
                                             animationSpec = tween(90),
                                         )
                                 )
@@ -196,7 +198,21 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                         modifier =
                             Modifier
                                 .weight(1f)
-                                .fillMaxWidth(),
+                                .fillMaxWidth()
+                                .pointerInput(Unit) {
+                                    var totalDrag = 0f
+                                    detectHorizontalDragGestures(
+                                        onDragEnd = {
+                                            if (totalDrag > 100) {
+                                                viewModel.onSwipeFilter(isNext = false)
+                                            } else if (totalDrag < -100) {
+                                                viewModel.onSwipeFilter(isNext = true)
+                                            }
+                                            totalDrag = 0f
+                                        },
+                                        onHorizontalDrag = { _, dragAmount -> totalDrag += dragAmount },
+                                    )
+                                },
                     ) { filter ->
                         val filteredReleases =
                             remember(allReleasesForDay, filter) {
