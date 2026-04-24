@@ -5,7 +5,6 @@ package com.kmno.dropdate.data.mapper
 import com.kmno.dropdate.data.local.entity.ReleaseEntity
 import com.kmno.dropdate.data.remote.anilist.AniListResponse
 import com.kmno.dropdate.data.remote.tmdb.TmdbMovieListDto
-import com.kmno.dropdate.data.remote.tmdb.TmdbTvListDto
 import com.kmno.dropdate.data.remote.tvmaze.TvMazeScheduleEntryDto
 import com.kmno.dropdate.domain.model.Release
 import com.kmno.dropdate.domain.model.ReleaseStatus
@@ -43,25 +42,6 @@ private val TMDB_MOVIE_GENRES =
         10752 to "War",
         37 to "Western",
     )
-private val TMDB_TV_GENRES =
-    mapOf(
-        10759 to "Action & Adventure",
-        16 to "Animation",
-        35 to "Comedy",
-        80 to "Crime",
-        99 to "Documentary",
-        18 to "Drama",
-        10751 to "Family",
-        10762 to "Kids",
-        9648 to "Mystery",
-        10763 to "News",
-        10764 to "Reality",
-        10765 to "Sci-Fi & Fantasy",
-        10766 to "Soap",
-        10767 to "Talk",
-        10768 to "War & Politics",
-        37 to "Western",
-    )
 
 private val POPULAR_PLATFORMS =
     setOf(
@@ -97,7 +77,6 @@ class ReleaseMapper
         fun fromTmdb(
             movies: TmdbMovieListDto,
             upcomingMovies: TmdbMovieListDto,
-            tvShows: TmdbTvListDto,
         ): List<ReleaseEntity> {
             val seen = mutableSetOf<String>()
             val now = System.currentTimeMillis()
@@ -117,6 +96,7 @@ class ReleaseMapper
                             type = ReleaseType.MOVIE.name,
                             status = releaseStatus(date),
                             airDate = dateStr,
+                            premiered = dateStr,
                             airTime = null,
                             platform = null,
                             episodeLabel = null,
@@ -146,6 +126,7 @@ class ReleaseMapper
                             type = ReleaseType.MOVIE.name,
                             status = releaseStatus(date),
                             airDate = dateStr,
+                            premiered = dateStr,
                             airTime = null,
                             platform = null,
                             episodeLabel = null,
@@ -160,35 +141,35 @@ class ReleaseMapper
                         )
                     }
 
-            val tvEntities =
-                tvShows.results
-                    .filter { "tmdb_t_${it.id}" !in seen && seen.add("tmdb_t_${it.id}") }
-                    .mapNotNull { dto ->
-                        val dateStr =
-                            dto.firstAirDate?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
-                        val date = parseLocalDate(dateStr) ?: return@mapNotNull null
-                        ReleaseEntity(
-                            id = "tmdb_t_${dto.id}",
-                            title = dto.name,
-                            posterUrl = dto.posterPath?.let { "$TMDB_IMAGE_BASE$TMDB_POSTER_SIZE$it" },
-                            backdropUrl = dto.backdropPath?.let { "$TMDB_IMAGE_BASE$TMDB_BACKDROP_SIZE$it" },
-                            type = ReleaseType.SERIES.name,
-                            status = releaseStatus(date),
-                            airDate = dateStr,
-                            airTime = null,
-                            platform = null,
-                            episodeLabel = null,
-                            rating = dto.voteAverage,
-                            synopsis = dto.overview,
-                            genres =
-                                dto.genreIds
-                                    .mapNotNull { TMDB_TV_GENRES[it] }
-                                    .joinToString(",")
-                                    .takeIf { it.isNotBlank() },
-                            syncedAt = now,
-                        )
-                    }
-            return movieEntities + uMovieEntities + tvEntities
+            /*    val tvEntities =
+                    tvShows.results
+                        .filter { "tmdb_t_${it.id}" !in seen && seen.add("tmdb_t_${it.id}") }
+                        .mapNotNull { dto ->
+                            val dateStr =
+                                dto.firstAirDate?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+                            val date = parseLocalDate(dateStr) ?: return@mapNotNull null
+                            ReleaseEntity(
+                                id = "tmdb_t_${dto.id}",
+                                title = dto.name,
+                                posterUrl = dto.posterPath?.let { "$TMDB_IMAGE_BASE$TMDB_POSTER_SIZE$it" },
+                                backdropUrl = dto.backdropPath?.let { "$TMDB_IMAGE_BASE$TMDB_BACKDROP_SIZE$it" },
+                                type = ReleaseType.SERIES.name,
+                                status = releaseStatus(date),
+                                airDate = dateStr,
+                                airTime = null,
+                                platform = null,
+                                episodeLabel = null,
+                                rating = dto.voteAverage,
+                                synopsis = dto.overview,
+                                genres =
+                                    dto.genreIds
+                                        .mapNotNull { TMDB_TV_GENRES[it] }
+                                        .joinToString(",")
+                                        .takeIf { it.isNotBlank() },
+                                syncedAt = now,
+                            )
+                        }*/
+            return movieEntities + uMovieEntities
         }
 
         // ── TV Series (TVMaze) ──────────────────────────────────────────────────
@@ -238,6 +219,7 @@ class ReleaseMapper
                         type = ReleaseType.SERIES.name,
                         status = releaseStatus(date),
                         airDate = dateStr,
+                        premiered = show.premiered,
                         airTime = if (group.size == 1) first.airtime else null,
                         platform = show.network?.name ?: show.webChannel?.name,
                         episodeLabel = episodeLabel,
@@ -348,6 +330,7 @@ class ReleaseMapper
                         type = ReleaseType.ANIME.name,
                         status = status,
                         airDate = dateStr,
+                        premiered = dateStr,
                         airTime = null,
                         platform = platform,
                         episodeLabel = "Ep ${entry.episode}",

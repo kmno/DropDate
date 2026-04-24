@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
@@ -137,12 +138,14 @@ fun ReleaseDetailSheet(
                 Spacer(Modifier.height(Dimens.SpacingNormal))
 
                 // Title
-                Text(
-                    text = release.title,
-                    fontSize = Dimens.FontTitle,
-                    fontWeight = FontWeight.Bold,
-                    color = TextPrimary,
-                )
+                SelectionContainer {
+                    Text(
+                        text = release.title,
+                        fontSize = Dimens.FontTitle,
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary,
+                    )
+                }
 
                 Spacer(Modifier.height(Dimens.SpacingSmall))
 

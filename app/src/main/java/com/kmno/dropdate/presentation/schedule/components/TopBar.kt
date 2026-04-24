@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import com.kmno.dropdate.R
 import com.kmno.dropdate.ui.theme.Background
 import com.kmno.dropdate.ui.theme.Dimens
@@ -27,18 +28,22 @@ import com.kmno.dropdate.ui.theme.TextPrimary
 import com.kmno.dropdate.ui.theme.TextSecondary
 
 @Composable
-fun TopBar(onRefresh: () -> Unit, modifier: Modifier = Modifier) {
+fun TopBar(
+    onRefresh: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(Background)
-            .statusBarsPadding()
-            .padding(Dimens.PaddingSmall)
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .background(Background)
+                .statusBarsPadding()
+                .padding(Dimens.PaddingSmall),
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -46,26 +51,26 @@ fun TopBar(onRefresh: () -> Unit, modifier: Modifier = Modifier) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_launcher_foreground),
                     contentDescription = null,
-                    modifier = Modifier.size(Dimens.IconLarge),
-                    tint = Color.Unspecified
+                    modifier = Modifier.size(Dimens.IconLarge + 10.dp),
+                    tint = Color.Unspecified,
                 )
                 Text(
                     text = stringResource(R.string.app_name),
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.titleMedium,
                     color = TextPrimary,
                 )
             }
 
             IconButton(
-                modifier = Modifier.size(Dimens.IconMedium), onClick = onRefresh
+                modifier = Modifier.size(Dimens.IconMedium),
+                onClick = onRefresh,
             ) {
                 Icon(
                     imageVector = Icons.Default.Refresh,
                     contentDescription = "Refresh",
-                    tint = TextSecondary
+                    tint = TextSecondary,
                 )
             }
         }
-
     }
 }

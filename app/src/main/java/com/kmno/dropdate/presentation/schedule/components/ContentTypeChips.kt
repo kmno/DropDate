@@ -67,6 +67,7 @@ private fun ContentFilter.accentColor() =
 @Composable
 fun ContentTypeChips(
     activeFilter: ContentFilter,
+    filteredReleasesCountMap: Map<ContentFilter, Int>,
     onFilterSelected: (ContentFilter) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -128,21 +129,43 @@ fun ContentTypeChips(
                             .onGloballyPositioned { coords ->
                                 chipWidths[i] = coords.size.width.toFloat()
                                 chipOffsets[i] = coords.positionInParent().x
-                            }
-                            .clip(RoundedCornerShape(Dimens.SpacingSmall))
+                            }.clip(RoundedCornerShape(Dimens.SpacingSmall))
                             .clickable { onFilterSelected(filter) }
                             .padding(
                                 horizontal = Dimens.SpacingNormal,
-                                vertical = Dimens.SpacingNormal
+                                vertical = Dimens.SpacingNormal,
                             ),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(
-                        text = filter.label(),
-                        fontSize = Dimens.FontNormal,
-                        fontWeight = if (isActive) FontWeight.SemiBold else FontWeight.Normal,
-                        color = textColor,
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingSmall),
+                    ) {
+                        Text(
+                            text = filter.label(),
+                            fontSize = Dimens.FontNormal,
+                            fontWeight = if (isActive) FontWeight.SemiBold else FontWeight.Normal,
+                            color = textColor,
+                        )
+                        val count = filteredReleasesCountMap[filter] ?: 0
+                        if (count > 0) {
+                            Box(
+                                modifier =
+                                    Modifier
+                                        .background(
+                                            color = textColor.copy(alpha = 0.1f),
+                                            shape = RoundedCornerShape(Dimens.SpacingSmall),
+                                        ).padding(horizontal = 6.dp, vertical = 2.dp),
+                            ) {
+                                Text(
+                                    text = count.toString(),
+                                    fontSize = Dimens.FontSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = textColor,
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -152,17 +175,35 @@ fun ContentTypeChips(
 @Preview(showBackground = true, backgroundColor = 0xFF080810, widthDp = 360)
 @Composable
 private fun ContentTypeChipsAllPreview() {
-    DropDateTheme { ContentTypeChips(activeFilter = ContentFilter.ALL, onFilterSelected = {}) }
+    DropDateTheme {
+        ContentTypeChips(
+            activeFilter = ContentFilter.ALL,
+            onFilterSelected = {},
+            filteredReleasesCountMap = emptyMap(),
+        )
+    }
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFF080810, widthDp = 360)
 @Composable
 private fun ContentTypeChipsMoviesPreview() {
-    DropDateTheme { ContentTypeChips(activeFilter = ContentFilter.MOVIES, onFilterSelected = {}) }
+    DropDateTheme {
+        ContentTypeChips(
+            activeFilter = ContentFilter.MOVIES,
+            onFilterSelected = {},
+            filteredReleasesCountMap = emptyMap(),
+        )
+    }
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFF080810, widthDp = 360)
 @Composable
 private fun ContentTypeChipsAnimePreview() {
-    DropDateTheme { ContentTypeChips(activeFilter = ContentFilter.ANIME, onFilterSelected = {}) }
+    DropDateTheme {
+        ContentTypeChips(
+            activeFilter = ContentFilter.ANIME,
+            onFilterSelected = {},
+            filteredReleasesCountMap = emptyMap(),
+        )
+    }
 }

@@ -89,14 +89,6 @@ fun ReleaseSection(
 
                 Spacer(modifier = Modifier.width(Dimens.SpacingMedium))
 
-                // Items count (less focus)
-                Text(
-                    text = "(${releases.size})",
-                    fontSize = Dimens.FontSmall,
-                    color = TextSecondary.copy(alpha = 0.6f),
-                    fontWeight = FontWeight.Medium,
-                )
-
                 Spacer(modifier = Modifier.weight(1f))
 
                 // More icon

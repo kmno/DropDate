@@ -10,6 +10,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -117,9 +118,28 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                         Spacer(modifier = Modifier.height(3.dp))
                     }
 
+                    // Feed — animated on filter change
+                    val allReleasesForDay =
+                        remember(state.releases) {
+                            state.releases.values.flatten()
+                        }
+
+                    val filteredReleasesCount: Map<ContentFilter, Int> =
+                        remember(allReleasesForDay) {
+                            allReleasesForDay
+                                .groupBy { release ->
+                                    when (release.type) {
+                                        ReleaseType.MOVIE -> ContentFilter.MOVIES
+                                        ReleaseType.SERIES -> ContentFilter.SERIES
+                                        ReleaseType.ANIME -> ContentFilter.ANIME
+                                    }
+                                }.mapValues { it.value.size }
+                        }
+
                     // Content type filter chips
                     ContentTypeChips(
                         activeFilter = state.activeFilter,
+                        filteredReleasesCountMap = filteredReleasesCount,
                         onFilterSelected = viewModel::onFilterChanged,
                         modifier =
                             Modifier.pointerInput(Unit) {
@@ -153,12 +173,6 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                             fontSize = Dimens.FontNormal,
                         )
                     }
-
-                    // Feed — animated on filter change
-                    val allReleasesForDay =
-                        remember(state.releases) {
-                            state.releases.values.flatten()
-                        }
 
                     AnimatedContent(
                         targetState = state.activeFilter,
@@ -291,10 +305,14 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                             horizontal = Dimens.PaddingExtraLarge,
                             vertical = Dimens.PaddingLarge,
                         ).shadow(
-                            elevation = 8.dp,
+                            elevation = 12.dp,
                             shape = RoundedCornerShape(Dimens.FloatingBoxCornerRadius),
                         ).background(SurfaceAlt, RoundedCornerShape(Dimens.FloatingBoxCornerRadius))
-                        .padding(vertical = Dimens.SpacingSmall),
+                        .border(
+                            width = 1.dp,
+                            color = Surface.copy(alpha = 0.5f),
+                            shape = RoundedCornerShape(Dimens.FloatingBoxCornerRadius),
+                        ).padding(vertical = Dimens.SpacingSmall),
             ) {
                 WeekScroller(
                     weekStart = state.selectedWeekStart,

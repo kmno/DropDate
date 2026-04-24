@@ -11,6 +11,7 @@ data class ReleaseEntity(
     val backdropUrl: String?,
     val type: String,
     val status: String,
+    val premiered: String,
     val airDate: String,
     val airTime: String?,
     val platform: String?,

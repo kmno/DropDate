@@ -114,16 +114,16 @@ object PlatformBranding {
             ) -> "https://www.logo.wine/a/logo/Disney%2B/Disney%2B-Logo.wine.svg"
 
             name.contains("hbo", true) ||
-                    name.contains(
-                        "hbo",
-                        true,
-                    ) -> "https://www.logo.wine/a/logo/HBO_Max/HBO_Max-Logo.wine.svg"
+                name.contains(
+                    "hbo",
+                    true,
+                ) -> "https://www.logo.wine/a/logo/HBO_Max/HBO_Max-Logo.wine.svg"
 
             name.contains("prime", true) ||
-                    name.contains(
-                        "amazon",
-                        true,
-                    ) -> "https://www.logo.wine/a/logo/Amazon_Prime/Amazon_Prime-Logo.wine.svg"
+                name.contains(
+                    "amazon",
+                    true,
+                ) -> "https://www.logo.wine/a/logo/Amazon_Prime/Amazon_Prime-Logo.wine.svg"
 
             name.contains("hulu", true) -> "https://www.logo.wine/a/logo/Hulu/Hulu-Logo.wine.svg"
             name.contains(
@@ -217,9 +217,8 @@ fun ReleaseCard(
                     .border(
                         0.5.dp,
                         accentColor.copy(alpha = 0.3f),
-                        RoundedCornerShape(Dimens.SpacingNormal)
-                    )
-                    .clickable(
+                        RoundedCornerShape(Dimens.SpacingNormal),
+                    ).clickable(
                         interactionSource = interactionSource,
                         indication = null,
                         onClick = { onClick(release) },

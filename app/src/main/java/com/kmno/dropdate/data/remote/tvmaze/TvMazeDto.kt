@@ -26,6 +26,8 @@ data class TvMazeEmbeddedDto(
 data class TvMazeShowDto(
     val id: Int,
     val name: String,
+    val status: String,
+    val premiered: String,
     val type: String,
     val language: String? = null,
     val image: TvMazeImageDto? = null,
