@@ -79,7 +79,7 @@ fun WeekScroller(
         IconButton(
             onClick = onPreviousClick,
             enabled = canGoBack,
-            modifier = Modifier.size(Dimens.IconExtraLarge),
+            modifier = Modifier.size(Dimens.IconLarge),
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
@@ -177,7 +177,7 @@ fun WeekScroller(
         IconButton(
             onClick = onNextClick,
             enabled = canGoForward,
-            modifier = Modifier.size(Dimens.IconExtraLarge),
+            modifier = Modifier.size(Dimens.IconLarge),
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "546278341835",
+    "project_id": "dropdate-9f900",
+    "storage_bucket": "dropdate-9f900.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:546278341835:android:7bfca7d173f62f2e9d6f4e",
+        "android_client_info": {
+          "package_name": "com.kmno.dropdate"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC_TOtvhSiCzbmGg9KRqNIMKIq6iNPGrWI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

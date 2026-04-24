@@ -1,0 +1,174 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+    <ManuallySuppressedIssues />
+    <CurrentIssues>
+        <ID>ArgumentListWrapping:ScheduleScreen.kt$( elevation = 8.dp, shape =
+            RoundedCornerShape(Dimens.FloatingBoxCornerRadius) )
+        </ID>
+        <ID>ArgumentListWrapping:ScheduleScreen.kt$( horizontal = Dimens.PaddingExtraLarge, vertical
+            = Dimens.PaddingLarge )
+        </ID>
+        <ID>ArgumentListWrapping:TopBar.kt$( modifier = Modifier.size(Dimens.IconMedium), onClick =
+            onRefresh )
+        </ID>
+        <ID>ComposableParamOrder:WeekScroller.kt$WeekScroller</ID>
+        <ID>CyclomaticComplexMethod:ReleaseCard.kt$PlatformBranding$fun getColor(name: String):
+            Color
+        </ID>
+        <ID>CyclomaticComplexMethod:ReleaseCard.kt$PlatformBranding$fun getDisplayName(name:
+            String): String
+        </ID>
+        <ID>CyclomaticComplexMethod:ReleaseDetailSheet.kt$@OptIn(ExperimentalMaterial3Api::class)
+            @Composable fun ReleaseDetailSheet( release: Release, onDismiss: () -&gt; Unit, )
+        </ID>
+        <ID>CyclomaticComplexMethod:ReleaseMapper.kt$ReleaseMapper$fun fromTmdb( movies:
+            TmdbMovieListDto, upcomingMovies: TmdbMovieListDto, tvShows: TmdbTvListDto, ): List&lt;ReleaseEntity&gt;
+        </ID>
+        <ID>CyclomaticComplexMethod:ReleaseMapper.kt$ReleaseMapper$fun fromTvMaze(entries: List&lt;TvMazeScheduleEntryDto&gt;):
+            List&lt;ReleaseEntity&gt;
+        </ID>
+        <ID>CyclomaticComplexMethod:ScheduleScreen.kt$@OptIn(ExperimentalMaterial3Api::class)
+            @Composable fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel())
+        </ID>
+        <ID>FinalNewline:TopBar.kt$com.kmno.dropdate.presentation.schedule.components.TopBar.kt</ID>
+        <ID>Indentation:AniListApi.kt$</ID>
+        <ID>Indentation:ContentTypeChips.kt$</ID>
+        <ID>Indentation:CountdownText.kt$</ID>
+        <ID>Indentation:ReleaseCard.kt$</ID>
+        <ID>Indentation:ReleaseCard.kt$PlatformBranding$</ID>
+        <ID>Indentation:ReleaseDetailSheet.kt$</ID>
+        <ID>Indentation:ReleaseMapper.kt$ReleaseMapper$</ID>
+        <ID>Indentation:ReleaseMapperTest.kt$ReleaseMapperTest$</ID>
+        <ID>Indentation:ReleaseSection.kt$</ID>
+        <ID>Indentation:Type.kt$</ID>
+        <ID>Indentation:WatchBadge.kt$</ID>
+        <ID>Indentation:WeekScroller.kt$</ID>
+        <ID>LambdaParameterInRestartableEffect:ReleaseDetailSheet.kt$onDismiss</ID>
+        <ID>LongMethod:ContentTypeChips.kt$@Composable fun ContentTypeChips( activeFilter:
+            ContentFilter, onFilterSelected: (ContentFilter) -&gt; Unit, modifier: Modifier =
+            Modifier, )
+        </ID>
+        <ID>LongMethod:CountdownText.kt$@Composable fun CountdownText( airDate: LocalDate, airTime:
+            LocalTime?, modifier: Modifier = Modifier, showDetails: Boolean = true, )
+        </ID>
+        <ID>LongMethod:ReleaseCard.kt$@Composable fun ReleaseCard( release: Release, index: Int,
+            onClick: (Release) -&gt; Unit, modifier: Modifier = Modifier, )
+        </ID>
+        <ID>LongMethod:ReleaseDetailSheet.kt$@Composable private fun ReleasedBanner(release:
+            Release)
+        </ID>
+        <ID>LongMethod:ReleaseDetailSheet.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun
+            ReleaseDetailSheet( release: Release, onDismiss: () -&gt; Unit, )
+        </ID>
+        <ID>LongMethod:ReleaseMapper.kt$ReleaseMapper$fun fromTmdb( movies: TmdbMovieListDto,
+            upcomingMovies: TmdbMovieListDto, tvShows: TmdbTvListDto, ): List&lt;ReleaseEntity&gt;
+        </ID>
+        <ID>LongMethod:ReleaseSection.kt$@Composable fun ReleaseSection( title: String, accentColor:
+            Color, releases: List&lt;Release&gt;, onReleaseClick: (Release) -&gt; Unit, onMoreClick:
+            () -&gt; Unit, modifier: Modifier = Modifier, )
+        </ID>
+        <ID>LongMethod:ScheduleScreen.kt$@Composable private fun AppIconLoadingScreen()</ID>
+        <ID>LongMethod:ScheduleScreen.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun
+            ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel())
+        </ID>
+        <ID>LongMethod:WeekScroller.kt$@Composable fun WeekScroller( weekStart: LocalDate,
+            selectedDay: LocalDate, today: LocalDate = LocalDate.now(), canGoBack: Boolean = true,
+            canGoForward: Boolean = true, onDaySelected: (LocalDate) -&gt; Unit, onDoubleTapDay:
+            (LocalDate) -&gt; Unit, onPreviousClick: () -&gt; Unit, onNextClick: () -&gt; Unit,
+            modifier: Modifier = Modifier, )
+        </ID>
+        <ID>MagicNumber:DropDateApp.kt$DropDateApp$0.25</ID>
+        <ID>MagicNumber:DropDateApp.kt$DropDateApp$1024</ID>
+        <ID>MagicNumber:DropDateApp.kt$DropDateApp$50L</ID>
+        <ID>MagicNumber:NetworkModule.kt$NetworkModule$60</ID>
+        <ID>MagicNumber:ReleaseCard.kt$14</ID>
+        <ID>MagicNumber:ReleaseCard.kt$PlatformBranding$0xFF000000</ID>
+        <ID>MagicNumber:ReleaseCard.kt$PlatformBranding$0xFF0047FF</ID>
+        <ID>MagicNumber:ReleaseCard.kt$PlatformBranding$0xFF0064FF</ID>
+        <ID>MagicNumber:ReleaseCard.kt$PlatformBranding$0xFF00A8E1</ID>
+        <ID>MagicNumber:ReleaseCard.kt$PlatformBranding$0xFF00D4FF</ID>
+        <ID>MagicNumber:ReleaseCard.kt$PlatformBranding$0xFF0F6CBD</ID>
+        <ID>MagicNumber:ReleaseCard.kt$PlatformBranding$0xFF113CCF</ID>
+        <ID>MagicNumber:ReleaseCard.kt$PlatformBranding$0xFF1CE783</ID>
+        <ID>MagicNumber:ReleaseCard.kt$PlatformBranding$0xFF2B2B2B</ID>
+        <ID>MagicNumber:ReleaseCard.kt$PlatformBranding$0xFF555555</ID>
+        <ID>MagicNumber:ReleaseCard.kt$PlatformBranding$0xFF6B6B85</ID>
+        <ID>MagicNumber:ReleaseCard.kt$PlatformBranding$0xFF7700BA</ID>
+        <ID>MagicNumber:ReleaseCard.kt$PlatformBranding$0xFF8B7536</ID>
+        <ID>MagicNumber:ReleaseCard.kt$PlatformBranding$0xFFCC0000</ID>
+        <ID>MagicNumber:ReleaseCard.kt$PlatformBranding$0xFFE50914</ID>
+        <ID>MagicNumber:ReleaseCard.kt$PlatformBranding$0xFFF47521</ID>
+        <ID>MagicNumber:ReleaseCard.kt$PlatformBranding$8</ID>
+        <ID>MagicNumber:ReleaseMapper.kt$ReleaseMapper$10</ID>
+        <ID>MagicNumber:ReleaseMapper.kt$ReleaseMapper$10f</ID>
+        <ID>MagicNumber:ReleaseSection.kt$5</ID>
+        <ID>MagicNumber:ScheduleViewModel.kt$ScheduleViewModel$6</ID>
+        <ID>MatchingDeclarationName:FlowExt.kt$FlowResult&lt;out T&gt;</ID>
+        <ID>MaxLineLength:ScheduleScreen.kt$(fadeIn() + slideInHorizontally { it / 4 }) togetherWith
+            (fadeOut() + slideOutHorizontally { -it / 4 })
+        </ID>
+        <ID>MaximumLineLength:ScheduleScreen.kt$</ID>
+        <ID>ModifierMissing:ScheduleScreen.kt$ScheduleScreen</ID>
+        <ID>MultipleEmitters:WatchBadge.kt$WatchBadge</ID>
+        <ID>MutableStateAutoboxing:ReleaseDetailSheet.kt$mutableStateOf(0f)</ID>
+        <ID>
+            NewLineAtEndOfFile:TopBar.kt$com.kmno.dropdate.presentation.schedule.components.TopBar.kt
+        </ID>
+        <ID>NoBlankLineBeforeRbrace:TopBar.kt$</ID>
+        <ID>ParameterNaming:ContentTypeChips.kt$onFilterSelected</ID>
+        <ID>ParameterNaming:WeekScroller.kt$onDaySelected</ID>
+        <ID>TopLevelPropertyNaming:ReleaseMapper.kt$private const val TMDB_BACKDROP_SIZE =
+            "original"
+        </ID>
+        <ID>TopLevelPropertyNaming:ReleaseMapper.kt$private const val TMDB_IMAGE_BASE =
+            "https://image.tmdb.org/t/p/"
+        </ID>
+        <ID>TopLevelPropertyNaming:ReleaseMapper.kt$private const val TMDB_POSTER_SIZE = "w500"</ID>
+        <ID>TopLevelPropertyNaming:TmdbApi.kt$/** * Common Provider IDs for US: * Netflix (8), Hulu
+            (15), Disney+ (337), Amazon Prime (119), Apple TV+ (350), * Max (1899), Peacock (386),
+            Paramount+ (531), Crunchyroll (283) */ const val TMDB_POPULAR_PROVIDERS =
+            "8|15|337|119|350|1899|386|531|283"
+        </ID>
+        <ID>TopLevelPropertyNaming:TmdbApi.kt$private const val API_KEY =
+            "8d1d75d45d64e354b12b88ad332d01fe"
+        </ID>
+        <ID>UnusedParameter:ReleaseDetailSheet.kt$release: Release</ID>
+        <ID>UnusedPrivateMember:ContentTypeChips.kt$@Preview(showBackground = true, backgroundColor
+            = 0xFF080810, widthDp = 360) @Composable private fun ContentTypeChipsAllPreview()
+        </ID>
+        <ID>UnusedPrivateMember:ContentTypeChips.kt$@Preview(showBackground = true, backgroundColor
+            = 0xFF080810, widthDp = 360) @Composable private fun ContentTypeChipsAnimePreview()
+        </ID>
+        <ID>UnusedPrivateMember:ContentTypeChips.kt$@Preview(showBackground = true, backgroundColor
+            = 0xFF080810, widthDp = 360) @Composable private fun ContentTypeChipsMoviesPreview()
+        </ID>
+        <ID>UnusedPrivateMember:CountdownText.kt$@Preview(showBackground = true, backgroundColor =
+            0xFF080810) @Composable private fun CountdownTextNoTimePreview()
+        </ID>
+        <ID>UnusedPrivateMember:CountdownText.kt$@Preview(showBackground = true, backgroundColor =
+            0xFF080810) @Composable private fun CountdownTextUpcomingPreview()
+        </ID>
+        <ID>UnusedPrivateMember:ReleaseCard.kt$@Preview(showBackground = true, backgroundColor =
+            0xFF080810) @Composable private fun ReleaseCardAnimePreview()
+        </ID>
+        <ID>UnusedPrivateMember:ReleaseCard.kt$@Preview(showBackground = true, backgroundColor =
+            0xFF080810) @Composable private fun ReleaseCardMovieUpcomingPreview()
+        </ID>
+        <ID>UnusedPrivateMember:ReleaseCard.kt$@Preview(showBackground = true, backgroundColor =
+            0xFF080810) @Composable private fun ReleaseCardSeriesReleasedPreview()
+        </ID>
+        <ID>UnusedPrivateMember:ReleaseSection.kt$@Preview(showBackground = true, backgroundColor =
+            0xFF080810, widthDp = 360) @Composable private fun ReleaseSectionMoviesPreview()
+        </ID>
+        <ID>UnusedPrivateMember:WatchBadge.kt$@Preview(showBackground = true, backgroundColor =
+            0xFF080810) @Composable private fun WatchBadgeNoPlatformPreview()
+        </ID>
+        <ID>UnusedPrivateMember:WatchBadge.kt$@Preview(showBackground = true, backgroundColor =
+            0xFF080810) @Composable private fun WatchBadgeWithPlatformPreview()
+        </ID>
+        <ID>UnusedPrivateMember:WeekScroller.kt$@Preview(showBackground = true, backgroundColor =
+            0xFF080810, widthDp = 360) @Composable private fun WeekScrollerPreview()
+        </ID>
+        <ID>UnusedPrivateProperty:WeekScroller.kt$private val DayItemWidth = 50.dp</ID>
+    </CurrentIssues>
+</SmellBaseline>

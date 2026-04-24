@@ -8,6 +8,9 @@ plugins {
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.androidx.room)
     alias(libs.plugins.ktlint)
+    alias(libs.plugins.detekt)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
 }
 
 val keystorePropertiesFile = rootProject.file("keystore.properties")
@@ -51,6 +54,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            configure<com.google.firebase.crashlytics.buildtools.gradle.CrashlyticsExtension> {
+                mappingFileUploadEnabled = false
+            }
+        }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
@@ -76,6 +84,23 @@ android {
 
 room {
     schemaDirectory("$projectDir/schemas")
+}
+
+detekt {
+    buildUponDefaultConfig = true
+    allRules = false
+    config.setFrom("$rootDir/config/detekt/detekt.yml")
+    baseline = file("$rootDir/config/detekt/baseline.xml")
+    parallel = true
+}
+
+tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
+    jvmTarget = "11"
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+        sarif.required.set(false)
+    }
 }
 
 dependencies {
@@ -137,6 +162,10 @@ dependencies {
     // Kotlin Serialization
     implementation(libs.kotlinx.serialization.json)
 
+    // Detekt plugins
+    detektPlugins(libs.detekt.formatting)
+    detektPlugins(libs.detekt.compose)
+
     // Testing
     testImplementation(libs.mockito.kotlin)
     testImplementation(libs.junit)
@@ -149,4 +178,8 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.crashlytics)
 }

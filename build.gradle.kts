@@ -8,4 +8,19 @@ plugins {
     alias(libs.plugins.hilt.android) apply false
     alias(libs.plugins.androidx.room) apply false
     alias(libs.plugins.ktlint) apply false
+    alias(libs.plugins.detekt) apply false
+    alias(libs.plugins.google.services) apply false
+    alias(libs.plugins.firebase.crashlytics) apply false
+}
+
+tasks.register<Copy>("installGitHook") {
+    description = "Installs the pre-commit hook from scripts/pre-commit"
+    group = "git hooks"
+    from("${rootProject.rootDir}/scripts/pre-commit")
+    into("${rootProject.rootDir}/.git/hooks")
+    filePermissions { unix("rwxr-xr-x") }
+}
+
+tasks.named("prepareKotlinBuildScriptModel") {
+    dependsOn("installGitHook")
 }
