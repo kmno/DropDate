@@ -17,4 +17,6 @@ data class ScheduleUiState(
     val error: String? = null,
     val canGoBack: Boolean = true,
     val canGoForward: Boolean = true,
+    val searchQuery: String = "",
+    val isSearchActive: Boolean = false,
 )

@@ -20,6 +20,10 @@
     <string name="drops_in_less_than_minute">Drops in &lt; 1m</string>
     <string name="time_tbd">Time TBD</string>
 
+    <!-- Search -->
+    <string name="search_releases">Search releases…</string>
+    <string name="close_search">Close search</string>
+
     <!-- Accessibility -->
     <string name="prev_day">Previous Day</string>
     <string name="next_day">Next Day</string>

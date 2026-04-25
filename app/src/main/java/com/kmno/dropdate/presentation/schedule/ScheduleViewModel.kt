@@ -190,6 +190,20 @@ class ScheduleViewModel
             _state.update { it.copy(selectedRelease = null) }
         }
 
+        fun onSearchQueryChanged(query: String) {
+            _state.update { it.copy(searchQuery = query) }
+        }
+
+        fun onSearchToggled() {
+            _state.update {
+                if (it.isSearchActive) {
+                    it.copy(isSearchActive = false, searchQuery = "")
+                } else {
+                    it.copy(isSearchActive = true)
+                }
+            }
+        }
+
         fun onRefresh() {
             val weekStart = _state.value.selectedWeekStart
             syncedWeeks.remove(weekStart) // force re-fetch for the visible week

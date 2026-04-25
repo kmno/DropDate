@@ -33,7 +33,7 @@ object NetworkModule {
                 HttpLoggingInterceptor().apply {
                     level =
                         if (BuildConfig.DEBUG) {
-                            HttpLoggingInterceptor.Level.HEADERS
+                            HttpLoggingInterceptor.Level.BASIC
                         } else {
                             HttpLoggingInterceptor.Level.NONE
                         }
@@ -58,21 +58,18 @@ object NetworkModule {
     fun provideTmdbApi(
         client: OkHttpClient,
         json: Json,
-    ): TmdbApi =
-        buildRetrofit("https://api.themoviedb.org/3/", client, json).create(TmdbApi::class.java)
+    ): TmdbApi = buildRetrofit("https://api.themoviedb.org/3/", client, json).create(TmdbApi::class.java)
 
     @Provides
     @Singleton
     fun provideAniListApi(
         client: OkHttpClient,
         json: Json,
-    ): AniListApi =
-        buildRetrofit("https://graphql.anilist.co/", client, json).create(AniListApi::class.java)
+    ): AniListApi = buildRetrofit("https://graphql.anilist.co/", client, json).create(AniListApi::class.java)
 
     @Provides @Singleton
     fun provideTvMazeApi(
         client: OkHttpClient,
         json: Json,
-    ): TvMazeApi =
-        buildRetrofit("https://api.tvmaze.com/", client, json).create(TvMazeApi::class.java)
+    ): TvMazeApi = buildRetrofit("https://api.tvmaze.com/", client, json).create(TvMazeApi::class.java)
 }

@@ -4,12 +4,15 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -61,15 +64,32 @@ fun TopBar(
                 )
             }
 
-            IconButton(
-                modifier = Modifier.size(Dimens.IconMedium),
-                onClick = onRefresh,
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Icon(
-                    imageVector = Icons.Default.Refresh,
-                    contentDescription = "Refresh",
-                    tint = TextSecondary,
-                )
+                Spacer(Modifier.width(Dimens.SpacingNormal))
+                IconButton(
+                    modifier = Modifier.size(Dimens.IconLarge),
+                    onClick = onRefresh,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Settings",
+                        tint = TextSecondary,
+                    )
+                }
+                Spacer(Modifier.width(Dimens.SpacingNormal))
+                IconButton(
+                    modifier = Modifier.size(Dimens.IconLarge),
+                    onClick = onRefresh,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = "Refresh",
+                        tint = TextSecondary,
+                    )
+                }
+                Spacer(Modifier.width(Dimens.SpacingMedium))
             }
         }
     }

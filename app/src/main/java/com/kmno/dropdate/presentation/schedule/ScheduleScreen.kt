@@ -55,6 +55,7 @@ import com.kmno.dropdate.presentation.schedule.components.ContentTypeChips
 import com.kmno.dropdate.presentation.schedule.components.ReleaseCard
 import com.kmno.dropdate.presentation.schedule.components.ReleaseDetailSheet
 import com.kmno.dropdate.presentation.schedule.components.ReleaseSection
+import com.kmno.dropdate.presentation.schedule.components.SearchFab
 import com.kmno.dropdate.presentation.schedule.components.SyncProgressBar
 import com.kmno.dropdate.presentation.schedule.components.TopBar
 import com.kmno.dropdate.presentation.schedule.components.WeekScroller
@@ -68,6 +69,7 @@ import com.kmno.dropdate.ui.theme.SurfaceAlt
 import com.kmno.dropdate.ui.theme.TextSecondary
 
 @OptIn(ExperimentalMaterial3Api::class)
+@Suppress("LongMethod")
 @Composable
 fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -118,10 +120,33 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                         Spacer(modifier = Modifier.height(3.dp))
                     }
 
+                    // Inline search bar when keyboard is open
+                    if (state.isSearchActive) {
+                        SearchFab(
+                            isExpanded = true,
+                            query = state.searchQuery,
+                            onQueryChange = viewModel::onSearchQueryChanged,
+                            onToggle = viewModel::onSearchToggled,
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .padding(
+                                        horizontal = Dimens.PaddingMedium,
+                                        vertical = Dimens.SpacingMedium,
+                                    ),
+                        )
+                    }
+
                     // Feed — animated on filter change
                     val allReleasesForDay =
-                        remember(state.releases) {
-                            state.releases.values.flatten()
+                        remember(state.releases, state.searchQuery) {
+                            val all = state.releases.values.flatten()
+                            val query = state.searchQuery.trim()
+                            if (query.isEmpty()) {
+                                all
+                            } else {
+                                all.filter { it.title.contains(query, ignoreCase = true) }
+                            }
                         }
 
                     val filteredReleasesCount: Map<ContentFilter, Int> =
@@ -312,49 +337,71 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                 }
             } // end PullToRefreshBox
 
-            // Floating Week Scroller at the bottom
-            Box(
+            // Floating bottom controls: Search FAB + Week Scroller
+            Column(
                 modifier =
                     Modifier
                         .align(Alignment.BottomCenter)
                         .padding(
                             horizontal = Dimens.PaddingExtraLarge,
                             vertical = Dimens.PaddingLarge,
-                        ).shadow(
-                            elevation = 12.dp,
-                            shape = RoundedCornerShape(Dimens.FloatingBoxCornerRadius),
-                        ).background(SurfaceAlt, RoundedCornerShape(Dimens.FloatingBoxCornerRadius))
-                        .border(
-                            width = 1.dp,
-                            color = Surface.copy(alpha = 0.5f),
-                            shape = RoundedCornerShape(Dimens.FloatingBoxCornerRadius),
-                        ).padding(vertical = Dimens.SpacingSmall),
+                        ),
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(Dimens.SpacingMedium),
             ) {
-                WeekScroller(
-                    weekStart = state.selectedWeekStart,
-                    selectedDay = state.selectedDay,
-                    canGoBack = state.canGoBack,
-                    canGoForward = state.canGoForward,
-                    onDaySelected = viewModel::onDaySelected,
-                    onDoubleTapDay = viewModel::onDoubleTapDay,
-                    onPreviousClick = { viewModel.onSwipeDay(isNext = false) },
-                    onNextClick = { viewModel.onSwipeDay(isNext = true) },
+                // Collapsed FAB only — expanded search bar is inline at the top
+                if (!state.isSearchActive) {
+                    SearchFab(
+                        isExpanded = false,
+                        query = "",
+                        onQueryChange = {},
+                        onToggle = viewModel::onSearchToggled,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+
+                Box(
                     modifier =
-                        Modifier.pointerInput(Unit) {
-                            var totalDrag = 0f
-                            detectHorizontalDragGestures(
-                                onDragEnd = {
-                                    if (totalDrag > 100) {
-                                        viewModel.onSwipeDay(isNext = false)
-                                    } else if (totalDrag < -100) {
-                                        viewModel.onSwipeDay(isNext = true)
-                                    }
-                                    totalDrag = 0f
-                                },
-                                onHorizontalDrag = { _, dragAmount -> totalDrag += dragAmount },
-                            )
-                        },
-                )
+                        Modifier
+                            .fillMaxWidth()
+                            .shadow(
+                                elevation = 12.dp,
+                                shape = RoundedCornerShape(Dimens.FloatingBoxCornerRadius),
+                            ).background(
+                                SurfaceAlt,
+                                RoundedCornerShape(Dimens.FloatingBoxCornerRadius),
+                            ).border(
+                                width = 1.dp,
+                                color = Surface.copy(alpha = 0.5f),
+                                shape = RoundedCornerShape(Dimens.FloatingBoxCornerRadius),
+                            ).padding(vertical = Dimens.SpacingSmall),
+                ) {
+                    WeekScroller(
+                        weekStart = state.selectedWeekStart,
+                        selectedDay = state.selectedDay,
+                        canGoBack = state.canGoBack,
+                        canGoForward = state.canGoForward,
+                        onDaySelected = viewModel::onDaySelected,
+                        onDoubleTapDay = viewModel::onDoubleTapDay,
+                        onPreviousClick = { viewModel.onSwipeDay(isNext = false) },
+                        onNextClick = { viewModel.onSwipeDay(isNext = true) },
+                        modifier =
+                            Modifier.pointerInput(Unit) {
+                                var totalDrag = 0f
+                                detectHorizontalDragGestures(
+                                    onDragEnd = {
+                                        if (totalDrag > 100) {
+                                            viewModel.onSwipeDay(isNext = false)
+                                        } else if (totalDrag < -100) {
+                                            viewModel.onSwipeDay(isNext = true)
+                                        }
+                                        totalDrag = 0f
+                                    },
+                                    onHorizontalDrag = { _, dragAmount -> totalDrag += dragAmount },
+                                )
+                            },
+                    )
+                }
             }
 
             // Detail bottom sheet
