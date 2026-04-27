@@ -8,6 +8,7 @@ import com.kmno.dropdate.core.analytics.AnalyticsHelper
 import com.kmno.dropdate.domain.model.Release
 import com.kmno.dropdate.domain.usecase.CleanupReleasesUseCase
 import com.kmno.dropdate.domain.usecase.GetWeekReleasesUseCase
+import com.kmno.dropdate.domain.usecase.SearchReleasesUseCase
 import com.kmno.dropdate.domain.usecase.SyncReleasesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -19,12 +20,15 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
 import javax.inject.Inject
+
+private const val DEBOUNCE = 200L
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 @HiltViewModel
@@ -34,6 +38,7 @@ class ScheduleViewModel
         private val getWeekReleases: GetWeekReleasesUseCase,
         private val syncReleases: SyncReleasesUseCase,
         private val cleanupReleases: CleanupReleasesUseCase,
+        private val searchReleasesUseCase: SearchReleasesUseCase,
         private val analyticsHelper: AnalyticsHelper,
     ) : ViewModel() {
         private val today = LocalDate.now()
@@ -44,6 +49,8 @@ class ScheduleViewModel
 
         // Tracks which week-start dates have already been fetched this session
         private val syncedWeeks = mutableSetOf<LocalDate>()
+
+        private val searchQuery = MutableStateFlow("")
 
         private val _state =
             MutableStateFlow(
@@ -59,7 +66,7 @@ class ScheduleViewModel
                 _state
                     .map { it.selectedWeekStart to it.selectedDay }
                     .distinctUntilChanged()
-                    .debounce(timeoutMillis = 200)
+                    .debounce(timeoutMillis = DEBOUNCE)
                     .flatMapLatest { (weekStart, selectedDay) ->
                         _state.update { it.copy(isLoading = true) }
                         getWeekReleases(
@@ -80,6 +87,27 @@ class ScheduleViewModel
 
             // Clean up releases older than last Monday at startup
             viewModelScope.launch { cleanupReleases(minDay) }
+
+            // search in all releases
+            viewModelScope.launch {
+                searchQuery
+                    .debounce(DEBOUNCE)
+                    .distinctUntilChanged()
+                    .flatMapLatest { query ->
+                        println("$$$$$$$$$$$ flatmpa")
+                        if (query.isBlank()) {
+                            flowOf(emptyMap())
+                        } else {
+                            searchReleasesUseCase(query = query).map { releases ->
+                                releases.groupBy { it.airDate }
+                            }
+                        }
+                    }.collectLatest { a ->
+                        println("$$$$$$$$$$$$$$$ ${a.size}")
+                        println("$$$$$$$$$$$$$$$ ${a.keys}")
+                        // _state.update { it.copy(releases = a) }
+                    }
+            }
         }
 
         private suspend fun fetchWeek(weekStart: LocalDate) {
@@ -192,6 +220,7 @@ class ScheduleViewModel
 
         fun onSearchQueryChanged(query: String) {
             _state.update { it.copy(searchQuery = query) }
+            searchQuery.value = query
         }
 
         fun onSearchToggled() {

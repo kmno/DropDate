@@ -1,6 +1,5 @@
 package com.kmno.dropdate.presentation.schedule
 
-import android.app.Activity
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -40,11 +39,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.view.WindowCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kmno.dropdate.R
@@ -77,12 +74,6 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
     val analyticsHelper = LocalAnalyticsHelper.current
     LaunchedEffect(Unit) {
         analyticsHelper.logScreenView("Schedule")
-    }
-
-    val view = LocalView.current
-    LaunchedEffect(Unit) {
-        val window = (view.context as Activity).window
-        WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
     }
 
     // Anchor scroll to selected day

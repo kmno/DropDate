@@ -98,4 +98,9 @@ class ReleaseRepositoryImpl
         override suspend fun deleteOldReleases(before: LocalDate) {
             dao.deleteOldReleases(before.toString())
         }
+
+        override fun searchReleasesTitle(query: String): Flow<List<Release>> =
+            dao.searchReleasesTitle(query).map { entities ->
+                entities.map(mapper::toDomain)
+            }
     }
