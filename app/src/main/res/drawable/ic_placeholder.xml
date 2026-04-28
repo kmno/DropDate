@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <!-- Background layer for the placeholder area -->
+    <path
+        android:fillColor="#1A1A2E"
+        android:pathData="M0,0h512v512h-512z" />
+
+    <!-- Stylized version of the 4-dot logo -->
+    <!-- Top Left -->
+    <path
+        android:fillAlpha="0.4"
+        android:fillColor="#4A9EFF"
+        android:pathData="M204,204m-40,0a40,40 0 1,1 80,0a40,40 0 1,1 -80,0" />
+    <!-- Top Right -->
+    <path
+        android:fillAlpha="0.4"
+        android:fillColor="#F5A623"
+        android:pathData="M308,204m-40,0a40,40 0 1,1 80,0a40,40 0 1,1 -80,0" />
+    <!-- Bottom Left -->
+    <path
+        android:fillAlpha="0.4"
+        android:fillColor="#FF4A50"
+        android:pathData="M204,308m-40,0a40,40 0 1,1 80,0a40,40 0 1,1 -80,0" />
+    <!-- Bottom Right -->
+    <path
+        android:fillAlpha="0.4"
+        android:fillColor="#C084FC"
+        android:pathData="M308,308m-40,0a40,40 0 1,1 80,0a40,40 0 1,1 -80,0" />
+
+    <!-- Center pulse/glow effect (optional) -->
+    <path
+        android:fillAlpha="0.1"
+        android:fillColor="#FFFFFF"
+        android:pathData="M256,256m-120,0a120,120 0 1,1 240,0a120,120 0 1,1 -240,0" />
+</vector>
