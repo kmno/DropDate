@@ -61,6 +61,7 @@ private val CardWidth = 140.dp
 private val CardHeight = 200.dp
 
 object PlatformBranding {
+    @Suppress("MagicNumber")
     fun getColor(name: String): Color =
         when {
             name.contains("netflix", true) -> Color(0xFFE50914)
@@ -73,7 +74,7 @@ object PlatformBranding {
             name.contains("paramount", true) -> Color(0xFF0064FF)
             name.contains("crunchyroll", true) -> Color(0xFFF47521)
             name.contains("funimation", true) -> Color(0xFF7700BA)
-            name.contains("amc", true) -> Color(0xFF2B2B2B)
+            name.contains("amc", true) -> Color(0xFF3A3A3A)
             name.contains("mgm", true) -> Color(0xFF8B7536)
             name.contains("showtime", true) -> Color(0xFFCC0000)
             name.contains("showmax", true) -> Color(0xFF00D4FF)
@@ -164,7 +165,7 @@ fun PlatformLogo(
             Text(
                 text = PlatformBranding.getDisplayName(platform),
                 color = Color.White,
-                fontSize = 7.sp,
+                fontSize = Dimens.FontBadgeSize,
                 fontWeight = FontWeight.Black,
                 modifier = Modifier.padding(horizontal = Dimens.SpacingSmall, vertical = 1.dp),
                 letterSpacing = 0.5.sp,

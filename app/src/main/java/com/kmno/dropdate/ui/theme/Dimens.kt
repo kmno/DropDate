@@ -30,6 +30,7 @@ object Dimens {
     val ProgressBarHeight = 3.dp
 
     // Font Sizes
+    val FontBadgeSize = 9.sp
     val FontExtraSmall = 10.sp
     val FontSmall = 12.sp
     val FontNormal = 14.sp

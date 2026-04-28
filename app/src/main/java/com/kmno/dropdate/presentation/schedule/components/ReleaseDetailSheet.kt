@@ -28,7 +28,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -62,6 +65,8 @@ import com.kmno.dropdate.ui.theme.SeriesRed
 import com.kmno.dropdate.ui.theme.SurfaceAlt
 import com.kmno.dropdate.ui.theme.TextPrimary
 import com.kmno.dropdate.ui.theme.TextSecondary
+import java.time.format.TextStyle
+import java.util.Locale
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -71,6 +76,14 @@ fun ReleaseDetailSheet(
     onDismiss: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    val dayOfWeek = release.airDate.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault())
+    val premiereLabel =
+        if (release.type != ReleaseType.MOVIE) {
+            "Every $dayOfWeek"
+        } else {
+            ""
+        }
 
     // Sync sheet state with ViewModel to prevent "frozen" state
     LaunchedEffect(sheetState.isVisible) {
@@ -93,44 +106,48 @@ fun ReleaseDetailSheet(
         dragHandle = null,
     ) {
         Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-            // Hero — blurred backdrop + poster
-            Box(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .height(220.dp),
-            ) {
-                // Backdrop (blurred via heavy downscale)
-                AsyncImage(
-                    model = release.backdropUrl ?: release.posterUrl,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.matchParentSize(),
-                )
-                // Dark scrim
+            release.posterUrl?.let {
+                // Hero — blurred backdrop + poster
                 Box(
                     modifier =
                         Modifier
-                            .matchParentSize()
-                            .background(
-                                Brush.verticalGradient(
-                                    0f to Color.Black.copy(alpha = 0.4f),
-                                    1f to Background,
+                            .fillMaxWidth()
+                            .height(220.dp),
+                ) {
+                    // Backdrop (blurred via heavy downscale)
+                    AsyncImage(
+                        model = release.backdropUrl ?: release.posterUrl,
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.matchParentSize(),
+                    )
+                    // Dark scrim
+                    Box(
+                        modifier =
+                            Modifier
+                                .matchParentSize()
+                                .background(
+                                    Brush.verticalGradient(
+                                        0f to Color.Black.copy(alpha = 0.4f),
+                                        1f to Background,
+                                    ),
                                 ),
-                            ),
-                )
-                // Poster thumbnail
-                AsyncImage(
-                    model = release.posterUrl,
-                    contentDescription = release.title,
-                    contentScale = ContentScale.Crop,
-                    modifier =
-                        Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(start = Dimens.PaddingMedium, bottom = Dimens.PaddingMedium)
-                            .size(width = 90.dp, height = 130.dp)
-                            .clip(RoundedCornerShape(Dimens.PaddingSmall + 2.dp)),
-                )
+                    )
+                    // Poster thumbnail
+                    AsyncImage(
+                        model = release.posterUrl,
+                        contentDescription = release.title,
+                        contentScale = ContentScale.Crop,
+                        modifier =
+                            Modifier
+                                .align(Alignment.BottomStart)
+                                .padding(
+                                    start = Dimens.PaddingMedium,
+                                    bottom = Dimens.PaddingMedium,
+                                ).size(width = 90.dp, height = 130.dp)
+                                .clip(RoundedCornerShape(Dimens.PaddingSmall + 2.dp)),
+                    )
+                }
             }
 
             // Metadata
@@ -179,6 +196,7 @@ fun ReleaseDetailSheet(
                         )
                     }
                 }
+
                 if (genres.isNotBlank()) {
                     Text(text = genres, fontSize = Dimens.FontSmall, color = TextSecondary)
                 }
@@ -193,11 +211,35 @@ fun ReleaseDetailSheet(
                     }
                 }
 
-                // Platform Badge
-                release.platform?.let { platform ->
-                    PlatformLogo(platform = platform)
-                    Spacer(Modifier.height(Dimens.SpacingNormal))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    // Platform Badge
+                    release.platform?.let { platform ->
+                        PlatformLogo(platform = platform)
+                        Spacer(Modifier.width(Dimens.SpacingSmall))
+                    }
+
+                    if (premiereLabel.isNotBlank()) {
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowRight,
+                            contentDescription = null,
+                            tint = TextPrimary,
+                            modifier = Modifier.size(Dimens.IconSmall),
+                        )
+                        Spacer(Modifier.width(Dimens.SpacingSmall))
+                        Text(
+                            text = premiereLabel,
+                            fontSize = Dimens.FontSmall,
+                            color =
+                                release.platform?.let { PlatformBranding.getColor(it) }
+                                    ?: TextPrimary,
+                            fontWeight = FontWeight.Bold,
+                        )
+                    }
                 }
+
+                Spacer(Modifier.height(Dimens.SpacingNormal))
 
                 // Synopsis
                 release.synopsis?.takeIf { it.isNotBlank() }?.let { synopsis ->
