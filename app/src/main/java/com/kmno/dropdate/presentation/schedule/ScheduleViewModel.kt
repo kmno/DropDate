@@ -94,7 +94,6 @@ class ScheduleViewModel
                     .debounce(DEBOUNCE)
                     .distinctUntilChanged()
                     .flatMapLatest { query ->
-                        println("$$$$$$$$$$$ flatmpa")
                         if (query.isBlank()) {
                             flowOf(emptyMap())
                         } else {

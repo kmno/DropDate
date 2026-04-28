@@ -88,7 +88,12 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
     }
 
     Scaffold(
-        topBar = { TopBar(onRefresh = viewModel::onRefresh) },
+        topBar = {
+            TopBar(
+                onRefresh = viewModel::onRefresh,
+                onSearchToggle = viewModel::onSearchToggled,
+            )
+        },
     ) { paddingValues ->
         Box(
             modifier =
@@ -340,17 +345,6 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                 horizontalAlignment = Alignment.End,
                 verticalArrangement = Arrangement.spacedBy(Dimens.SpacingMedium),
             ) {
-                // Collapsed FAB only — expanded search bar is inline at the top
-                if (!state.isSearchActive) {
-                    SearchFab(
-                        isExpanded = false,
-                        query = "",
-                        onQueryChange = {},
-                        onToggle = viewModel::onSearchToggled,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-
                 Box(
                     modifier =
                         Modifier

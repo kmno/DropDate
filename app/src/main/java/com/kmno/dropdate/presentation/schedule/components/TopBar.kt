@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,6 +34,7 @@ import com.kmno.dropdate.ui.theme.TextSecondary
 @Composable
 fun TopBar(
     onRefresh: () -> Unit,
+    onSearchToggle: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -67,7 +69,18 @@ fun TopBar(
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                Spacer(Modifier.width(Dimens.SpacingNormal))
+                Spacer(Modifier.width(Dimens.SpacingLarge))
+                IconButton(
+                    modifier = Modifier.size(Dimens.IconLarge),
+                    onClick = onSearchToggle,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search",
+                        tint = TextSecondary,
+                    )
+                }
+                Spacer(Modifier.width(Dimens.SpacingLarge))
                 IconButton(
                     modifier = Modifier.size(Dimens.IconLarge),
                     onClick = onRefresh,
@@ -78,7 +91,7 @@ fun TopBar(
                         tint = TextSecondary,
                     )
                 }
-                Spacer(Modifier.width(Dimens.SpacingNormal))
+                Spacer(Modifier.width(Dimens.SpacingLarge))
                 IconButton(
                     modifier = Modifier.size(Dimens.IconLarge),
                     onClick = onRefresh,
