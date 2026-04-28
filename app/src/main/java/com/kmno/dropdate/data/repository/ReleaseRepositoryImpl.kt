@@ -8,11 +8,13 @@ import com.kmno.dropdate.data.remote.tmdb.TmdbApi
 import com.kmno.dropdate.data.remote.tvmaze.TvMazeApi
 import com.kmno.dropdate.domain.model.Release
 import com.kmno.dropdate.domain.repository.ReleaseRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneOffset
@@ -39,59 +41,62 @@ class ReleaseRepositoryImpl
             weekStart: LocalDate,
             weekEnd: LocalDate,
         ): Result<Unit> =
-            runCatching {
-                coroutineScope {
-                    val dayCount = (weekEnd.toEpochDay() - weekStart.toEpochDay() + 1).toInt()
+            withContext(Dispatchers.IO) {
+                runCatching {
+                    coroutineScope {
+                        val dayCount = (weekEnd.toEpochDay() - weekStart.toEpochDay() + 1).toInt()
 
-                    // Fire independent network calls simultaneously
-                    val movies =
-                        async {
-                            tmdbApi.discoverMovies(
-                                startDate = weekStart.toString(),
-                                endDate = weekEnd.toString(),
-                            )
-                        }
-                    val upcomingMovies =
-                        async {
-                            tmdbApi.getUpcomingMovies()
-                        }
+                        // Fire independent network calls simultaneously
+                        val movies =
+                            async {
+                                tmdbApi.discoverMovies(
+                                    startDate = weekStart.toString(),
+                                    endDate = weekEnd.toString(),
+                                )
+                            }
+                        val upcomingMovies =
+                            async {
+                                tmdbApi.getUpcomingMovies()
+                            }
 
-                    val allTvMazeDays =
-                        (0 until dayCount)
-                            .map { i ->
-                                async {
-                                    tvMazeApi.getStreamingSchedule(
-                                        weekStart.plusDays(i.toLong()).toString(),
-                                    )
-                                }
-                            }.awaitAll()
-                            .flatten()
+                        val allTvMazeDays =
+                            (0 until dayCount)
+                                .map { i ->
+                                    async {
+                                        tvMazeApi.getStreamingSchedule(
+                                            weekStart.plusDays(i.toLong()).toString(),
+                                        )
+                                    }
+                                }.awaitAll()
+                                .flatten()
 
-                    val weekStartUnix = weekStart.atStartOfDay().toEpochSecond(ZoneOffset.UTC).toInt()
-                    val weekEndUnix =
-                        weekEnd.atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC).toInt()
-                    val anime =
-                        async {
-                            aniListApi.getAnimeSchedule(
-                                aniListScheduleQuery(
-                                    weekStartUnix,
-                                    weekEndUnix,
-                                ),
-                            )
-                        }
+                        val weekStartUnix =
+                            weekStart.atStartOfDay().toEpochSecond(ZoneOffset.UTC).toInt()
+                        val weekEndUnix =
+                            weekEnd.atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC).toInt()
+                        val anime =
+                            async {
+                                aniListApi.getAnimeSchedule(
+                                    aniListScheduleQuery(
+                                        weekStartUnix,
+                                        weekEndUnix,
+                                    ),
+                                )
+                            }
 
-                    val entities =
-                        buildList {
-                            addAll(
-                                mapper.fromTmdb(
-                                    movies.await(),
-                                    upcomingMovies.await(),
-                                ),
-                            )
-                            addAll(mapper.fromTvMaze(allTvMazeDays))
-                            addAll(mapper.fromAniList(anime.await()))
-                        }
-                    dao.upsertAll(entities)
+                        val entities =
+                            buildList {
+                                addAll(
+                                    mapper.fromTmdb(
+                                        movies.await(),
+                                        upcomingMovies.await(),
+                                    ),
+                                )
+                                addAll(mapper.fromTvMaze(allTvMazeDays))
+                                addAll(mapper.fromAniList(anime.await()))
+                            }
+                        dao.upsertAll(entities)
+                    }
                 }
             }
 

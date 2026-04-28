@@ -20,14 +20,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -181,20 +185,6 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
 
                     HorizontalDivider(color = Surface, thickness = 1.dp)
 
-                    // Error display
-                    state.error?.let { error ->
-                        Text(
-                            text = stringResource(R.string.error_prefix, error),
-                            color = SeriesRed,
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .padding(Dimens.PaddingLarge),
-                            textAlign = TextAlign.Center,
-                            fontSize = Dimens.FontNormal,
-                        )
-                    }
-
                     AnimatedContent(
                         targetState = state.activeFilter,
                         transitionSpec = {
@@ -250,7 +240,27 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                                 modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center,
                             ) {
-                                Text(
+                                // Error display
+                                state.error?.let { error ->
+                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                        Icon(
+                                            imageVector = Icons.Default.Warning,
+                                            tint = SeriesRed,
+                                            contentDescription = "",
+                                            modifier = Modifier.size(Dimens.IconExtraLarge),
+                                        )
+                                        Text(
+                                            text = stringResource(R.string.error_prefix, error),
+                                            color = SeriesRed,
+                                            modifier =
+                                                Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(Dimens.PaddingLarge),
+                                            textAlign = TextAlign.Center,
+                                            fontSize = Dimens.FontNormal,
+                                        )
+                                    }
+                                } ?: Text(
                                     text = stringResource(R.string.no_releases_found),
                                     color = TextSecondary,
                                     textAlign = TextAlign.Center,

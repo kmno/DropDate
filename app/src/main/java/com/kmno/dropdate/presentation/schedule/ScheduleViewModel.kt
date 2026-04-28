@@ -102,8 +102,6 @@ class ScheduleViewModel
                             }
                         }
                     }.collectLatest { a ->
-                        println("$$$$$$$$$$$$$$$ ${a.size}")
-                        println("$$$$$$$$$$$$$$$ ${a.keys}")
                         // _state.update { it.copy(releases = a) }
                     }
             }
@@ -219,7 +217,7 @@ class ScheduleViewModel
 
         fun onSearchQueryChanged(query: String) {
             _state.update { it.copy(searchQuery = query) }
-            searchQuery.value = query
+            // searchQuery.value = query
         }
 
         fun onSearchToggled() {
