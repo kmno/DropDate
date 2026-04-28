@@ -55,7 +55,10 @@ class ScheduleViewModel
         private val _state =
             MutableStateFlow(
                 ScheduleUiState(isLoading = true).let { s ->
-                    s.copy(canGoBack = s.selectedDay > minDay, canGoForward = s.selectedDay < maxDay)
+                    s.copy(
+                        canGoBack = s.selectedWeekStart > minDay,
+                        canGoForward = s.selectedWeekStart < maxDay.minusDays(6),
+                    )
                 },
             )
         val state: StateFlow<ScheduleUiState> = _state.asStateFlow()
@@ -126,8 +129,6 @@ class ScheduleViewModel
             _state.update {
                 it.copy(
                     selectedDay = day,
-                    canGoBack = day > minDay,
-                    canGoForward = day < maxDay,
                 )
             }
         }
@@ -139,14 +140,34 @@ class ScheduleViewModel
                 it.copy(
                     selectedDay = day,
                     selectedWeekStart = newWeekStart,
-                    canGoBack = day > minDay,
-                    canGoForward = day < maxDay,
+                    canGoBack = newWeekStart > minDay,
+                    canGoForward = newWeekStart < maxDay.minusDays(6),
                 )
             }
         }
 
-        fun onWeekChanged(weekStart: LocalDate) {
-            _state.update { it.copy(selectedWeekStart = weekStart) }
+        fun onSwipeWeek(isNext: Boolean) {
+            val currentWeekStart = _state.value.selectedWeekStart
+            val newWeekStart =
+                if (isNext) currentWeekStart.plusWeeks(1) else currentWeekStart.minusWeeks(1)
+
+            // Clamp week start to [minDay, maxDay - 6]
+            val clampedWeekStart = newWeekStart.coerceIn(minDay, maxDay.minusDays(6))
+
+            val currentDay = _state.value.selectedDay
+            val newDay =
+                currentDay
+                    .plusWeeks(if (isNext) 1 else -1)
+                    .coerceIn(clampedWeekStart, clampedWeekStart.plusDays(6))
+
+            _state.update {
+                it.copy(
+                    selectedDay = newDay,
+                    selectedWeekStart = clampedWeekStart,
+                    canGoBack = clampedWeekStart > minDay,
+                    canGoForward = clampedWeekStart < maxDay.minusDays(6),
+                )
+            }
         }
 
         fun onFilterChanged(filter: ContentFilter) {
@@ -181,8 +202,8 @@ class ScheduleViewModel
                 it.copy(
                     selectedDay = newDay,
                     selectedWeekStart = newWeekStart,
-                    canGoBack = newDay > minDay,
-                    canGoForward = newDay < maxDay,
+                    canGoBack = newWeekStart > minDay,
+                    canGoForward = newWeekStart < maxDay.minusDays(6),
                 )
             }
         }

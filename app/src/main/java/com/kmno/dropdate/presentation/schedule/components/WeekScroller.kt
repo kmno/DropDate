@@ -84,7 +84,7 @@ fun WeekScroller(
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                contentDescription = stringResource(R.string.prev_day),
+                contentDescription = stringResource(R.string.prev_week),
                 tint = if (canGoBack) TextPrimary else TextSecondary.copy(alpha = 0.2f),
                 modifier = Modifier.size(Dimens.IconMedium),
             )
@@ -190,7 +190,7 @@ fun WeekScroller(
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = stringResource(R.string.next_day),
+                contentDescription = stringResource(R.string.next_week),
                 tint = if (canGoForward) TextPrimary else TextSecondary.copy(alpha = 0.2f),
                 modifier = Modifier.size(Dimens.IconMedium),
             )

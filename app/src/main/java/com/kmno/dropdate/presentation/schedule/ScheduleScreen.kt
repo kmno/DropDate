@@ -349,7 +349,7 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                     Modifier
                         .align(Alignment.BottomCenter)
                         .padding(
-                            horizontal = Dimens.PaddingExtraLarge,
+                            horizontal = Dimens.PaddingSmall,
                             vertical = Dimens.PaddingLarge,
                         ),
                 horizontalAlignment = Alignment.End,
@@ -378,8 +378,8 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                         canGoForward = state.canGoForward,
                         onDaySelected = viewModel::onDaySelected,
                         onDoubleTapDay = viewModel::onDoubleTapDay,
-                        onPreviousClick = { viewModel.onSwipeDay(isNext = false) },
-                        onNextClick = { viewModel.onSwipeDay(isNext = true) },
+                        onPreviousClick = { viewModel.onSwipeWeek(isNext = false) },
+                        onNextClick = { viewModel.onSwipeWeek(isNext = true) },
                         modifier =
                             Modifier.pointerInput(Unit) {
                                 var totalDrag = 0f
