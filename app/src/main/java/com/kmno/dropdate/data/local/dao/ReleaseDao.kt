@@ -28,4 +28,7 @@ interface ReleaseDao {
 
     @Query("DELETE FROM releases WHERE airDate < :before")
     suspend fun deleteOldReleases(before: String)
+
+    @Query("SELECT * FROM releases WHERE title LIKE '%' || :query || '%'")
+    fun searchReleasesTitle(query: String): Flow<List<ReleaseEntity>>
 }

@@ -16,4 +16,6 @@ interface ReleaseRepository {
     ): Result<Unit>
 
     suspend fun deleteOldReleases(before: LocalDate)
+
+    fun searchReleasesTitle(query: String): Flow<List<Release>>
 }
