@@ -5,6 +5,8 @@ import java.time.LocalTime
 
 data class Release(
     val id: String,
+    val seriesId: String,
+    val isTracked: Boolean = false,
     val title: String,
     val posterUrl: String?,
     val backdropUrl: String?,

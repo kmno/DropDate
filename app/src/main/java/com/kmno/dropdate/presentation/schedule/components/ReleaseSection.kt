@@ -126,6 +126,7 @@ private fun fakeRelease(
     status: ReleaseStatus = ReleaseStatus.UPCOMING,
 ) = Release(
     id = id,
+    seriesId = id,
     title = title,
     posterUrl = null,
     backdropUrl = null,
