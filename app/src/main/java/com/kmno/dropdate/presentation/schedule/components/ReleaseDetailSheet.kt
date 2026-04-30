@@ -1,19 +1,27 @@
 package com.kmno.dropdate.presentation.schedule.components
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +39,8 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
@@ -75,6 +85,7 @@ import kotlin.math.roundToInt
 fun ReleaseDetailSheet(
     release: Release,
     onDismiss: () -> Unit,
+    onToggleTrack: () -> Unit = {},
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -134,6 +145,20 @@ fun ReleaseDetailSheet(
                                     ),
                                 ),
                     )
+
+                    if (release.type != ReleaseType.MOVIE || release.status != ReleaseStatus.RELEASED) {
+                        // Track Button
+                        TrackButton(
+                            isTracked = release.isTracked,
+                            onToggle = onToggleTrack,
+                            accentColor = accentColor,
+                            modifier =
+                                Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(Dimens.PaddingMedium),
+                        )
+                    }
+
                     // Poster thumbnail
                     AsyncImage(
                         model = release.posterUrl,
@@ -266,6 +291,78 @@ fun ReleaseDetailSheet(
                 }
 
                 Spacer(Modifier.height(Dimens.PaddingExtraLarge))
+            }
+        }
+    }
+}
+
+@Composable
+private fun TrackButton(
+    isTracked: Boolean,
+    onToggle: () -> Unit,
+    accentColor: Color,
+    modifier: Modifier = Modifier,
+) {
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.92f else 1.0f,
+        animationSpec =
+            spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessLow,
+            ),
+        label = "scale",
+    )
+
+    val containerColor by animateColorAsState(
+        targetValue = if (isTracked) accentColor else Color.Black.copy(alpha = 0.5f),
+        animationSpec = spring(stiffness = Spring.StiffnessLow),
+        label = "color",
+    )
+
+    val contentColor by animateColorAsState(
+        targetValue = if (isTracked) Color.Black else Color.White,
+        label = "contentColor",
+    )
+
+    Box(
+        modifier =
+            modifier
+                .scale(scale)
+                .height(36.dp)
+                .clip(RoundedCornerShape(18.dp))
+                .background(containerColor)
+                .border(
+                    width = 1.dp,
+                    color = if (isTracked) Color.Transparent else Color.White.copy(alpha = 0.3f),
+                    shape = RoundedCornerShape(18.dp),
+                ).clickable(
+                    interactionSource = interactionSource,
+                    indication = null,
+                    onClick = onToggle,
+                ).padding(horizontal = 14.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            AnimatedContent(
+                targetState = isTracked,
+                transitionSpec = {
+                    (scaleIn(spring(Spring.DampingRatioMediumBouncy)) + fadeIn()) togetherWith
+                        (scaleOut(spring(Spring.DampingRatioMediumBouncy)) + fadeOut())
+                },
+                label = "iconChange",
+            ) { tracked ->
+                Icon(
+                    imageVector = if (tracked) Icons.Default.Notifications else Icons.Outlined.Notifications,
+                    contentDescription = null,
+                    tint = contentColor,
+                    modifier = Modifier.size(18.dp),
+                )
             }
         }
     }

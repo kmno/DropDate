@@ -9,6 +9,7 @@ import com.kmno.dropdate.domain.model.Release
 import com.kmno.dropdate.domain.usecase.CleanupReleasesUseCase
 import com.kmno.dropdate.domain.usecase.GetWeekReleasesUseCase
 import com.kmno.dropdate.domain.usecase.SearchReleasesUseCase
+import com.kmno.dropdate.domain.usecase.SetTrackingUseCase
 import com.kmno.dropdate.domain.usecase.SyncReleasesUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -39,6 +40,7 @@ class ScheduleViewModel
         private val syncReleases: SyncReleasesUseCase,
         private val cleanupReleases: CleanupReleasesUseCase,
         private val searchReleasesUseCase: SearchReleasesUseCase,
+        private val setTracking: SetTrackingUseCase,
         private val analyticsHelper: AnalyticsHelper,
     ) : ViewModel() {
         private val today = LocalDate.now()
@@ -256,6 +258,30 @@ class ScheduleViewModel
             syncedWeeks.remove(weekStart) // force re-fetch for the visible week
             viewModelScope.launch { fetchWeek(weekStart) }
             analyticsHelper.logEvent("manual_refresh")
+        }
+
+        fun onToggleTracking(release: Release) {
+            val newTracked = !release.isTracked
+            // Optimistically update the sheet so the button flips instantly
+            _state.update { s ->
+                val updated =
+                    s.selectedRelease
+                        ?.takeIf { it.id == release.id }
+                        ?.copy(isTracked = newTracked)
+                s.copy(selectedRelease = updated ?: s.selectedRelease)
+            }
+            viewModelScope.launch {
+                setTracking(release, newTracked).onFailure {
+                    // Revert optimistic update on failure
+                    _state.update { s ->
+                        val reverted =
+                            s.selectedRelease
+                                ?.takeIf { it.id == release.id }
+                                ?.copy(isTracked = release.isTracked)
+                        s.copy(selectedRelease = reverted ?: s.selectedRelease)
+                    }
+                }
+            }
         }
 
         private fun List<Release>.groupAndFilter(selectedDay: LocalDate): Map<LocalDate, List<Release>> =

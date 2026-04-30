@@ -18,4 +18,11 @@ interface ReleaseRepository {
     suspend fun deleteOldReleases(before: LocalDate)
 
     fun searchReleasesTitle(query: String): Flow<List<Release>>
+
+    suspend fun setTracking(
+        seriesId: String,
+        track: Boolean,
+    )
+
+    fun getTrackedReleases(): Flow<List<Release>>
 }

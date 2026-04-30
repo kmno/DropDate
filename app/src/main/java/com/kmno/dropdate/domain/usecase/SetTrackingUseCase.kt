@@ -1,16 +1,19 @@
 package com.kmno.dropdate.domain.usecase
 
+import com.kmno.dropdate.domain.model.Release
 import com.kmno.dropdate.domain.repository.ReleaseRepository
-import java.time.LocalDate
 import javax.inject.Inject
 
-class SyncReleasesUseCase
+class SetTrackingUseCase
     @Inject
     constructor(
         private val repository: ReleaseRepository,
     ) {
         suspend operator fun invoke(
-            weekStart: LocalDate,
-            weekEnd: LocalDate,
-        ): Result<Unit> = repository.syncReleases(weekStart, weekEnd)
+            release: Release,
+            track: Boolean,
+        ): Result<Unit> =
+            runCatching {
+                repository.setTracking(release.seriesId, track)
+            }
     }

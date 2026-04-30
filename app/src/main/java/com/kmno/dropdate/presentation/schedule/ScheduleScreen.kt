@@ -404,6 +404,7 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
                 ReleaseDetailSheet(
                     release = release,
                     onDismiss = viewModel::onSheetDismissed,
+                    onToggleTrack = { viewModel.onToggleTracking(release) },
                 )
             }
 
