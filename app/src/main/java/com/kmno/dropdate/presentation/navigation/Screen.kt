@@ -5,4 +5,7 @@ import kotlinx.serialization.Serializable
 sealed class Screen {
     @Serializable
     data object Schedule : Screen()
+
+    @Serializable
+    data object Trackings : Screen()
 }

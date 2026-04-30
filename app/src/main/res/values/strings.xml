@@ -29,4 +29,6 @@
     <string name="next_day">Next Day</string>
     <string name="prev_week">Previous Week</string>
     <string name="next_week">Next Week</string>
+
+    <string name="tracked_release">My Trackings</string>
 </resources>

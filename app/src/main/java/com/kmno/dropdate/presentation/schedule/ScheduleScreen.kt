@@ -46,7 +46,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kmno.dropdate.R
 import com.kmno.dropdate.core.analytics.LocalAnalyticsHelper
@@ -72,7 +72,11 @@ import com.kmno.dropdate.ui.theme.TextSecondary
 @OptIn(ExperimentalMaterial3Api::class)
 @Suppress("LongMethod")
 @Composable
-fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
+fun ScheduleScreen(
+    onNavigateToTrackings: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: ScheduleViewModel = hiltViewModel(),
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     val analyticsHelper = LocalAnalyticsHelper.current
@@ -88,14 +92,16 @@ fun ScheduleScreen(viewModel: ScheduleViewModel = hiltViewModel()) {
             sortedDates.indexOfFirst { it == state.selectedDay }.coerceAtLeast(0)
         }
     LaunchedEffect(state.selectedDay) {
-        if (sortedDates.isNotEmpty()) lazyListState.animateScrollToItem(selectedDayIndex)
+        if (sortedDates.isNotEmpty()) lazyListState.scrollToItem(selectedDayIndex)
     }
 
     Scaffold(
+        modifier = modifier,
         topBar = {
             TopBar(
                 onRefresh = viewModel::onRefresh,
                 onSearchToggle = viewModel::onSearchToggled,
+                onTrackedClick = onNavigateToTrackings,
             )
         },
     ) { paddingValues ->

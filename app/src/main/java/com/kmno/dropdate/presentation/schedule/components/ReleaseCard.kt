@@ -27,6 +27,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -183,11 +184,14 @@ fun ReleaseCard(
     index: Int,
     onClick: (Release) -> Unit,
     modifier: Modifier = Modifier,
+    isTrackMode: Boolean = false,
 ) {
-    var visible by remember { mutableStateOf(false) }
+    var visible by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(Unit) {
-        delay(index * 30L)
-        visible = true
+        if (!visible) {
+            delay(index * 30L)
+            visible = true
+        }
     }
 
     val interactionSource = remember { MutableInteractionSource() }
@@ -218,7 +222,7 @@ fun ReleaseCard(
                     .clip(RoundedCornerShape(Dimens.SpacingNormal))
                     .background(ThemeSurface)
                     .border(
-                        0.5.dp,
+                        1.dp,
                         accentColor.copy(alpha = 0.3f),
                         RoundedCornerShape(Dimens.SpacingNormal),
                     ).clickable(
@@ -293,17 +297,18 @@ fun ReleaseCard(
                     }
                 }
 
-                Spacer(Modifier.height(Dimens.SpacingSmall))
-
-                // Badge or countdown
-                if (release.status == ReleaseStatus.RELEASED) {
-                    WatchBadge(platform = null)
-                } else {
-                    CountdownText(
-                        airDate = release.airDate,
-                        airTime = release.airTime,
-                        showDetails = false,
-                    )
+                if (isTrackMode.not()) {
+                    Spacer(Modifier.height(Dimens.SpacingSmall))
+                    // Badge or countdown
+                    if (release.status == ReleaseStatus.RELEASED) {
+                        WatchBadge(platform = null)
+                    } else {
+                        CountdownText(
+                            airDate = release.airDate,
+                            airTime = release.airTime,
+                            showDetails = false,
+                        )
+                    }
                 }
             }
         }

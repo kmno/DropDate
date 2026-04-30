@@ -26,7 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,7 +54,7 @@ fun ReleaseSection(
     onMoreClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var headerVisible by remember { mutableStateOf(false) }
+    var headerVisible by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(Unit) { headerVisible = true }
 
     Column(modifier = modifier.fillMaxWidth()) {

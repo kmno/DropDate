@@ -11,9 +11,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -35,6 +35,7 @@ import com.kmno.dropdate.ui.theme.TextSecondary
 fun TopBar(
     onRefresh: () -> Unit,
     onSearchToggle: () -> Unit,
+    onTrackedClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -72,33 +73,33 @@ fun TopBar(
                 Spacer(Modifier.width(Dimens.SpacingLarge))
                 IconButton(
                     modifier = Modifier.size(Dimens.IconLarge),
-                    onClick = onSearchToggle,
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Search,
-                        contentDescription = "Search",
-                        tint = TextSecondary,
-                    )
-                }
-                Spacer(Modifier.width(Dimens.SpacingLarge))
-                IconButton(
-                    modifier = Modifier.size(Dimens.IconLarge),
-                    onClick = {},
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Settings,
-                        contentDescription = "Settings",
-                        tint = TextSecondary,
-                    )
-                }
-                Spacer(Modifier.width(Dimens.SpacingLarge))
-                IconButton(
-                    modifier = Modifier.size(Dimens.IconLarge),
                     onClick = onRefresh,
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Refresh,
                         contentDescription = "Refresh",
+                        tint = TextSecondary,
+                    )
+                }
+                Spacer(Modifier.width(Dimens.SpacingLarge))
+                IconButton(
+                    modifier = Modifier.size(Dimens.IconLarge),
+                    onClick = onTrackedClick,
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Notifications,
+                        contentDescription = "Trackings",
+                        tint = TextSecondary,
+                    )
+                }
+                Spacer(Modifier.width(Dimens.SpacingLarge))
+                IconButton(
+                    modifier = Modifier.size(Dimens.IconLarge),
+                    onClick = onSearchToggle,
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Search,
+                        contentDescription = "Search",
                         tint = TextSecondary,
                     )
                 }

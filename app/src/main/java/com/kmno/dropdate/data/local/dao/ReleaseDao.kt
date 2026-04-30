@@ -48,9 +48,13 @@ interface ReleaseDao {
 
     @Query(
         """
+        SELECT * FROM (
         SELECT * FROM releases
         WHERE seriesId IN (SELECT seriesId FROM tracked_series)
-        ORDER BY airDate ASC
+        ORDER BY airDate ASC, rating DESC
+    )
+    GROUP BY seriesId
+    ORDER BY airDate ASC
     """,
     )
     fun observeTracked(): Flow<List<ReleaseEntity>>
