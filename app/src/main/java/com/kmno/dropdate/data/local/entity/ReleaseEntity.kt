@@ -6,6 +6,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "releases")
 data class ReleaseEntity(
     @PrimaryKey val id: String,
+    val seriesId: String,
     val title: String,
     val posterUrl: String?,
     val backdropUrl: String?,

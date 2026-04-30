@@ -25,6 +25,7 @@ class GetWeekReleasesUseCaseTest {
         date: LocalDate,
     ) = Release(
         id = id,
+        seriesId = id,
         title = "Title $id",
         posterUrl = null,
         backdropUrl = null,

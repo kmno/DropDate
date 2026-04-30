@@ -11,9 +11,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -75,7 +75,7 @@ fun TopBar(
                     onClick = onSearchToggle,
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Search,
+                        imageVector = Icons.Outlined.Search,
                         contentDescription = "Search",
                         tint = TextSecondary,
                     )
@@ -83,10 +83,10 @@ fun TopBar(
                 Spacer(Modifier.width(Dimens.SpacingLarge))
                 IconButton(
                     modifier = Modifier.size(Dimens.IconLarge),
-                    onClick = onRefresh,
+                    onClick = {},
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Settings,
+                        imageVector = Icons.Outlined.Settings,
                         contentDescription = "Settings",
                         tint = TextSecondary,
                     )
@@ -97,7 +97,7 @@ fun TopBar(
                     onClick = onRefresh,
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Refresh,
+                        imageVector = Icons.Outlined.Refresh,
                         contentDescription = "Refresh",
                         tint = TextSecondary,
                     )

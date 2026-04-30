@@ -90,6 +90,7 @@ class ReleaseMapper
                         val date = parseLocalDate(dateStr) ?: return@mapNotNull null
                         ReleaseEntity(
                             id = "tmdb_m_${dto.id}",
+                            seriesId = "tmdb_m_${dto.id}",
                             title = dto.title,
                             posterUrl = dto.posterPath?.let { "$TMDB_IMAGE_BASE$TMDB_POSTER_SIZE$it" },
                             backdropUrl = dto.backdropPath?.let { "$TMDB_IMAGE_BASE$TMDB_BACKDROP_SIZE$it" },
@@ -120,6 +121,7 @@ class ReleaseMapper
                         val date = parseLocalDate(dateStr) ?: return@mapNotNull null
                         ReleaseEntity(
                             id = "tmdb_m_${dto.id}",
+                            seriesId = "tmdb_m_${dto.id}",
                             title = dto.title,
                             posterUrl = dto.posterPath?.let { "$TMDB_IMAGE_BASE$TMDB_POSTER_SIZE$it" },
                             backdropUrl = dto.backdropPath?.let { "$TMDB_IMAGE_BASE$TMDB_BACKDROP_SIZE$it" },
@@ -213,6 +215,7 @@ class ReleaseMapper
 
                     ReleaseEntity(
                         id = "tvmaze_${show.id}_$dateStr",
+                        seriesId = "tvmaze_${show.id}",
                         title = show.name,
                         posterUrl = show.image?.original ?: show.image?.medium,
                         backdropUrl = show.image?.original ?: show.image?.medium,
@@ -324,6 +327,7 @@ class ReleaseMapper
                             ?.site
                     ReleaseEntity(
                         id = "anilist_${media.id}_${dateStr}_ep${entry.episode}",
+                        seriesId = "anilist_${media.id}",
                         title = title,
                         posterUrl = media.coverImage?.large,
                         backdropUrl = media.coverImage?.large,
@@ -349,9 +353,14 @@ class ReleaseMapper
 
         // ── Domain mapping ───────────────────────────────────────────────────────
 
-        fun toDomain(entity: ReleaseEntity): Release =
+        fun toDomain(
+            entity: ReleaseEntity,
+            isTracked: Boolean = false,
+        ): Release =
             Release(
                 id = entity.id,
+                seriesId = entity.seriesId,
+                isTracked = isTracked,
                 title = entity.title,
                 posterUrl = entity.posterUrl,
                 backdropUrl = entity.backdropUrl,

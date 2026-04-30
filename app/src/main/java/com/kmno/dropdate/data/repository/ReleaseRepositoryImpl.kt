@@ -1,6 +1,7 @@
 package com.kmno.dropdate.data.repository
 
 import com.kmno.dropdate.data.local.dao.ReleaseDao
+import com.kmno.dropdate.data.local.entity.TrackedSeriesEntity
 import com.kmno.dropdate.data.mapper.ReleaseMapper
 import com.kmno.dropdate.data.remote.anilist.AniListApi
 import com.kmno.dropdate.data.remote.anilist.aniListScheduleQuery
@@ -13,6 +14,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
@@ -33,8 +35,12 @@ class ReleaseRepositoryImpl
             weekStart: LocalDate,
             weekEnd: LocalDate,
         ): Flow<List<Release>> =
-            dao.observeByWeek(weekStart.toString(), weekEnd.toString()).map { entities ->
-                entities.map(mapper::toDomain)
+            combine(
+                dao.observeByWeek(weekStart.toString(), weekEnd.toString()),
+                dao.observeTrackedSeriesIds(),
+            ) { entities, trackedIds ->
+                val tracked = trackedIds.toHashSet()
+                entities.map { mapper.toDomain(it, isTracked = it.seriesId in tracked) }
             }
 
         override suspend fun syncReleases(
@@ -107,5 +113,17 @@ class ReleaseRepositoryImpl
         override fun searchReleasesTitle(query: String): Flow<List<Release>> =
             dao.searchReleasesTitle(query).map { entities ->
                 entities.map(mapper::toDomain)
+            }
+
+        override suspend fun setTracking(
+            seriesId: String,
+            track: Boolean,
+        ) {
+            if (track) dao.trackSeries(TrackedSeriesEntity(seriesId)) else dao.untrackSeries(seriesId)
+        }
+
+        override fun getTrackedReleases(): Flow<List<Release>> =
+            dao.observeTracked().map { entities ->
+                entities.map { mapper.toDomain(it, isTracked = true) }
             }
     }

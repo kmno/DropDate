@@ -319,6 +319,7 @@ private fun previewRelease(
     platform: String? = "Theaters",
 ) = Release(
     id = id,
+    seriesId = id,
     title = title,
     posterUrl = null,
     backdropUrl = null,
