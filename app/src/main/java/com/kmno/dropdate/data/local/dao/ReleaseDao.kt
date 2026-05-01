@@ -58,4 +58,14 @@ interface ReleaseDao {
     """,
     )
     fun observeTracked(): Flow<List<ReleaseEntity>>
+
+    @Query(
+        """
+        SELECT * FROM releases
+        WHERE seriesId IN (SELECT seriesId FROM tracked_series)
+        AND airDate = :date
+        ORDER BY rating DESC, title ASC
+    """,
+    )
+    suspend fun getTrackedAiringOn(date: String): List<ReleaseEntity>
 }

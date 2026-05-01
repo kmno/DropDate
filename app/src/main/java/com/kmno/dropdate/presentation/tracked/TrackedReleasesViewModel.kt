@@ -3,10 +3,12 @@ package com.kmno.dropdate.presentation.tracked
 import android.os.Bundle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.WorkManager
 import com.kmno.dropdate.core.analytics.AnalyticsHelper
 import com.kmno.dropdate.domain.model.Release
 import com.kmno.dropdate.domain.usecase.GetTrackedReleasesUseCase
 import com.kmno.dropdate.domain.usecase.SetTrackingUseCase
+import com.kmno.dropdate.worker.AiringReminderWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
 import kotlinx.coroutines.FlowPreview
@@ -25,6 +27,7 @@ class TrackedReleasesViewModel
         private val getTrackedReleasesUseCase: GetTrackedReleasesUseCase,
         private val setTracking: SetTrackingUseCase,
         private val analyticsHelper: AnalyticsHelper,
+        private val workManager: WorkManager,
     ) : ViewModel() {
         private val _state = MutableStateFlow(TrackedUiState(loading = true))
         val state = _state.asStateFlow()
@@ -49,6 +52,10 @@ class TrackedReleasesViewModel
                     putString("release_title", release.title)
                 },
             )
+        }
+
+        fun triggerTestNotification() {
+            AiringReminderWorker.scheduleTest(workManager)
         }
 
         fun onSheetDismissed() {

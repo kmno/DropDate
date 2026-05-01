@@ -38,7 +38,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -146,18 +146,16 @@ fun ReleaseDetailSheet(
                                 ),
                     )
 
-                    if (release.type != ReleaseType.MOVIE || release.status != ReleaseStatus.RELEASED) {
-                        // Track Button
-                        TrackButton(
-                            isTracked = release.isTracked,
-                            onToggle = onToggleTrack,
-                            accentColor = accentColor,
-                            modifier =
-                                Modifier
-                                    .align(Alignment.TopEnd)
-                                    .padding(Dimens.PaddingMedium),
-                        )
-                    }
+                    // Track Button
+                    TrackButton(
+                        isTracked = release.isTracked,
+                        onToggle = onToggleTrack,
+                        accentColor = accentColor,
+                        modifier =
+                            Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(Dimens.PaddingMedium),
+                    )
 
                     // Poster thumbnail
                     AsyncImage(
@@ -248,7 +246,7 @@ fun ReleaseDetailSheet(
 
                     if (premiereLabel.isNotBlank()) {
                         Icon(
-                            imageVector = Icons.Default.KeyboardArrowRight,
+                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                             contentDescription = null,
                             tint = TextPrimary,
                             modifier = Modifier.size(Dimens.IconSmall),
