@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,6 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.kmno.dropdate.BuildConfig
 import com.kmno.dropdate.R
 import com.kmno.dropdate.presentation.schedule.components.ReleaseCard
 import com.kmno.dropdate.presentation.schedule.components.ReleaseDetailSheet
@@ -64,6 +66,17 @@ fun TrackedReleasesScreen(
                             contentDescription = "Back",
                             tint = TextSecondary,
                         )
+                    }
+                },
+                actions = {
+                    if (BuildConfig.DEBUG) {
+                        IconButton(onClick = viewModel::triggerTestNotification) {
+                            Icon(
+                                imageVector = Icons.Outlined.Notifications,
+                                contentDescription = "Test notification",
+                                tint = TextSecondary,
+                            )
+                        }
                     }
                 },
             )

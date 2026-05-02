@@ -31,4 +31,14 @@
     <string name="next_week">Next Week</string>
 
     <string name="tracked_release">My Trackings</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_name">Airing Reminders</string>
+    <string name="notification_channel_desc">Get notified when a tracked title airs soon</string>
+    <string name="notification_drops_tomorrow">Drops tomorrow</string>
+    <string name="notification_episode_drops">%1$s drops tomorrow</string>
+    <string name="notification_drops_today">Drops today</string>
+    <string name="notification_episode_drops_today">%1$s drops today</string>
+    <string name="notification_summary_tomorrow">%1$d releases dropping tomorrow</string>
+    <string name="notification_summary_today">%1$d releases dropping today</string>
 </resources>
