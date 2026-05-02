@@ -22,9 +22,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -53,10 +50,10 @@ import com.kmno.dropdate.core.analytics.LocalAnalyticsHelper
 import com.kmno.dropdate.domain.model.ReleaseType
 import com.kmno.dropdate.presentation.schedule.components.AppIconLoadingScreen
 import com.kmno.dropdate.presentation.schedule.components.ContentTypeChips
-import com.kmno.dropdate.presentation.schedule.components.ReleaseCard
+import com.kmno.dropdate.presentation.schedule.components.LazyGrid
 import com.kmno.dropdate.presentation.schedule.components.ReleaseDetailSheet
 import com.kmno.dropdate.presentation.schedule.components.ReleaseSection
-import com.kmno.dropdate.presentation.schedule.components.SearchFab
+import com.kmno.dropdate.presentation.schedule.components.SearchInputField
 import com.kmno.dropdate.presentation.schedule.components.SyncProgressBar
 import com.kmno.dropdate.presentation.schedule.components.TopBar
 import com.kmno.dropdate.presentation.schedule.components.WeekScroller
@@ -128,8 +125,7 @@ fun ScheduleScreen(
 
                     // Inline search bar when keyboard is open
                     if (state.isSearchActive) {
-                        SearchFab(
-                            isExpanded = true,
+                        SearchInputField(
                             query = state.searchQuery,
                             onQueryChange = viewModel::onSearchQueryChanged,
                             onToggle = viewModel::onSearchToggled,
@@ -319,37 +315,17 @@ fun ScheduleScreen(
                                 }
                             }
                         } else {
-                            // Lazy Grid of releases
-                            LazyVerticalGrid(
-                                columns = GridCells.Fixed(2),
-                                contentPadding =
-                                    PaddingValues(
-                                        start = Dimens.PaddingMedium,
-                                        end = Dimens.PaddingMedium,
-                                        top = Dimens.PaddingSmall,
-                                        bottom = 120.dp,
-                                    ),
-                                verticalArrangement = Arrangement.spacedBy(Dimens.SpacingNormal),
-                                horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingNormal),
-                            ) {
-                                itemsIndexed(
-                                    filteredReleases,
-                                    key = { _, r -> r.id },
-                                ) { index, release ->
-                                    ReleaseCard(
-                                        release = release,
-                                        index = index,
-                                        onClick = viewModel::onReleaseSelected,
-                                        modifier = Modifier.fillMaxWidth(),
-                                    )
-                                }
-                            }
+                            // Lazy Grid of releases with nor categories
+                            LazyGrid(
+                                releases = filteredReleases,
+                                viewModel::onReleaseSelected,
+                            )
                         }
                     }
                 }
             } // end PullToRefreshBox
 
-            // Floating bottom controls: Search FAB + Week Scroller
+            // Floating bottom controls: Week Scroller
             Column(
                 modifier =
                     Modifier

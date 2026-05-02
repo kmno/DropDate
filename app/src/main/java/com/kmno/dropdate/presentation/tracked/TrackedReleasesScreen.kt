@@ -1,15 +1,9 @@
 package com.kmno.dropdate.presentation.tracked
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Notifications
@@ -24,15 +18,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kmno.dropdate.BuildConfig
 import com.kmno.dropdate.R
-import com.kmno.dropdate.presentation.schedule.components.ReleaseCard
+import com.kmno.dropdate.presentation.schedule.components.LazyGrid
 import com.kmno.dropdate.presentation.schedule.components.ReleaseDetailSheet
 import com.kmno.dropdate.ui.theme.Background
-import com.kmno.dropdate.ui.theme.Dimens
 import com.kmno.dropdate.ui.theme.TextPrimary
 import com.kmno.dropdate.ui.theme.TextSecondary
 
@@ -89,31 +81,10 @@ fun TrackedReleasesScreen(
                     .padding(paddingValues)
                     .background(Background),
         ) {
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(2),
-                contentPadding =
-                    PaddingValues(
-                        start = Dimens.PaddingMedium,
-                        end = Dimens.PaddingMedium,
-                        top = Dimens.PaddingSmall,
-                        bottom = 120.dp,
-                    ),
-                verticalArrangement = Arrangement.spacedBy(Dimens.SpacingNormal),
-                horizontalArrangement = Arrangement.spacedBy(Dimens.SpacingNormal),
-            ) {
-                itemsIndexed(
-                    state.releases,
-                    key = { _, r -> r.id },
-                ) { index, release ->
-                    ReleaseCard(
-                        release = release,
-                        index = index,
-                        isTrackMode = true,
-                        onClick = viewModel::onReleaseSelected,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                }
-            }
+            LazyGrid(
+                releases = state.releases,
+                viewModel::onReleaseSelected,
+            )
 
             // Detail bottom sheet
             state.selectedRelease?.let { release ->
