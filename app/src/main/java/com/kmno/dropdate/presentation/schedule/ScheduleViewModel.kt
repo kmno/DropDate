@@ -2,8 +2,6 @@ package com.kmno.dropdate.presentation.schedule
 
 import android.os.Bundle
 import android.util.Log
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.kmno.dropdate.core.analytics.AnalyticsHelper
 import com.kmno.dropdate.domain.model.Release
 import com.kmno.dropdate.domain.usecase.CleanupReleasesUseCase
@@ -11,6 +9,7 @@ import com.kmno.dropdate.domain.usecase.GetWeekReleasesUseCase
 import com.kmno.dropdate.domain.usecase.SearchReleasesUseCase
 import com.kmno.dropdate.domain.usecase.SetTrackingUseCase
 import com.kmno.dropdate.domain.usecase.SyncReleasesUseCase
+import com.kmno.dropdate.presentation.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -21,10 +20,8 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
 import javax.inject.Inject
@@ -41,8 +38,7 @@ class ScheduleViewModel
         private val cleanupReleases: CleanupReleasesUseCase,
         private val searchReleasesUseCase: SearchReleasesUseCase,
         private val setTracking: SetTrackingUseCase,
-        private val analyticsHelper: AnalyticsHelper,
-    ) : ViewModel() {
+    ) : BaseViewModel() {
         private val today = LocalDate.now()
 
         // 3-week frame: last Mon → next Sun
@@ -51,8 +47,6 @@ class ScheduleViewModel
 
         // Tracks which week-start dates have already been fetched this session
         private val syncedWeeks = mutableSetOf<LocalDate>()
-
-        private val searchQuery = MutableStateFlow("")
 
         private val _state =
             MutableStateFlow(
@@ -67,7 +61,7 @@ class ScheduleViewModel
 
         init {
             // Observe DB — reacts to week/day/filter changes
-            viewModelScope.launch {
+            launch {
                 _state
                     .map { it.selectedWeekStart to it.selectedDay }
                     .distinctUntilChanged()
@@ -84,32 +78,14 @@ class ScheduleViewModel
             }
 
             // Lazy-fetch: sync a week the first time it becomes visible
-            viewModelScope.launch {
+            launch {
                 _state.map { it.selectedWeekStart }.distinctUntilChanged().collect { weekStart ->
                     if (weekStart !in syncedWeeks) fetchWeek(weekStart)
                 }
             }
 
             // Clean up releases older than last Monday at startup
-            viewModelScope.launch { cleanupReleases(minDay) }
-
-            // search in all releases
-            viewModelScope.launch {
-                searchQuery
-                    .debounce(DEBOUNCE)
-                    .distinctUntilChanged()
-                    .flatMapLatest { query ->
-                        if (query.isBlank()) {
-                            flowOf(emptyMap())
-                        } else {
-                            searchReleasesUseCase(query = query).map { releases ->
-                                releases.groupBy { it.airDate }
-                            }
-                        }
-                    }.collectLatest { a ->
-                        // _state.update { it.copy(releases = a) }
-                    }
-            }
+            launch { cleanupReleases(minDay) }
         }
 
         private suspend fun fetchWeek(weekStart: LocalDate) {
@@ -174,7 +150,7 @@ class ScheduleViewModel
 
         fun onFilterChanged(filter: ContentFilter) {
             _state.update { it.copy(activeFilter = filter) }
-            analyticsHelper.logEvent(
+            logAnalyticsEvent(
                 "filter_changed",
                 Bundle().apply {
                     putString("filter_name", filter.name)
@@ -224,7 +200,7 @@ class ScheduleViewModel
 
         fun onReleaseSelected(release: Release) {
             _state.update { it.copy(selectedRelease = release) }
-            analyticsHelper.logEvent(
+            logAnalyticsEvent(
                 AnalyticsHelper.Events.CONTENT_SELECTED,
                 Bundle().apply {
                     putString(AnalyticsHelper.Params.CONTENT_ID, release.id)
@@ -240,7 +216,14 @@ class ScheduleViewModel
 
         fun onSearchQueryChanged(query: String) {
             _state.update { it.copy(searchQuery = query) }
-            // searchQuery.value = query
+            if (query.length >= 3) {
+                logAnalyticsEvent(
+                    AnalyticsHelper.Events.SEARCH,
+                    Bundle().apply {
+                        putString(AnalyticsHelper.Params.SEARCH_TERM, query)
+                    },
+                )
+            }
         }
 
         fun onSearchToggled() {
@@ -256,12 +239,22 @@ class ScheduleViewModel
         fun onRefresh() {
             val weekStart = _state.value.selectedWeekStart
             syncedWeeks.remove(weekStart) // force re-fetch for the visible week
-            viewModelScope.launch { fetchWeek(weekStart) }
-            analyticsHelper.logEvent("manual_refresh")
+            launch { fetchWeek(weekStart) }
+            logAnalyticsEvent("manual_refresh")
         }
 
         fun onToggleTracking(release: Release) {
             val newTracked = !release.isTracked
+
+            logAnalyticsEvent(
+                if (newTracked) AnalyticsHelper.Events.FAVORITE_ADDED else AnalyticsHelper.Events.FAVORITE_REMOVED,
+                Bundle().apply {
+                    putString(AnalyticsHelper.Params.CONTENT_ID, release.id)
+                    putString(AnalyticsHelper.Params.CONTENT_TYPE, release.type.name)
+                    putString("release_title", release.title)
+                },
+            )
+
             // Optimistically update the sheet so the button flips instantly
             _state.update { s ->
                 val updated =
@@ -270,7 +263,7 @@ class ScheduleViewModel
                         ?.copy(isTracked = newTracked)
                 s.copy(selectedRelease = updated ?: s.selectedRelease)
             }
-            viewModelScope.launch {
+            launch {
                 setTracking(release, newTracked).onFailure {
                     // Revert optimistic update on failure
                     _state.update { s ->

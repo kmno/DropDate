@@ -1,22 +1,20 @@
 package com.kmno.dropdate.presentation.tracked
 
 import android.os.Bundle
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.work.WorkManager
 import com.kmno.dropdate.core.analytics.AnalyticsHelper
 import com.kmno.dropdate.domain.model.Release
 import com.kmno.dropdate.domain.usecase.GetTrackedReleasesUseCase
 import com.kmno.dropdate.domain.usecase.SetTrackingUseCase
+import com.kmno.dropdate.presentation.BaseViewModel
 import com.kmno.dropdate.worker.AiringReminderWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
-import jakarta.inject.Inject
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @OptIn(FlowPreview::class)
 @Suppress("MagicNumber")
@@ -26,14 +24,13 @@ class TrackedReleasesViewModel
     constructor(
         private val getTrackedReleasesUseCase: GetTrackedReleasesUseCase,
         private val setTracking: SetTrackingUseCase,
-        private val analyticsHelper: AnalyticsHelper,
         private val workManager: WorkManager,
-    ) : ViewModel() {
+    ) : BaseViewModel() {
         private val _state = MutableStateFlow(TrackedUiState(loading = true))
         val state = _state.asStateFlow()
 
         init {
-            viewModelScope.launch {
+            launch {
                 getTrackedReleasesUseCase()
                     .debounce(80L)
                     .collect { releases ->
@@ -44,7 +41,7 @@ class TrackedReleasesViewModel
 
         fun onReleaseSelected(release: Release) {
             _state.update { it.copy(selectedRelease = release) }
-            analyticsHelper.logEvent(
+            logAnalyticsEvent(
                 AnalyticsHelper.Events.CONTENT_SELECTED,
                 Bundle().apply {
                     putString(AnalyticsHelper.Params.CONTENT_ID, release.id)
@@ -64,6 +61,16 @@ class TrackedReleasesViewModel
 
         fun onToggleTracking(release: Release) {
             val newTracked = !release.isTracked
+
+            logAnalyticsEvent(
+                if (newTracked) AnalyticsHelper.Events.FAVORITE_ADDED else AnalyticsHelper.Events.FAVORITE_REMOVED,
+                Bundle().apply {
+                    putString(AnalyticsHelper.Params.CONTENT_ID, release.id)
+                    putString(AnalyticsHelper.Params.CONTENT_TYPE, release.type.name)
+                    putString("release_title", release.title)
+                },
+            )
+
             // Optimistically update the sheet so the button flips instantly
             _state.update { s ->
                 val updated =
@@ -72,7 +79,7 @@ class TrackedReleasesViewModel
                         ?.copy(isTracked = newTracked)
                 s.copy(selectedRelease = updated ?: s.selectedRelease)
             }
-            viewModelScope.launch {
+            launch {
                 setTracking(release, newTracked).onFailure {
                     // Revert optimistic update on failure
                     _state.update { s ->
