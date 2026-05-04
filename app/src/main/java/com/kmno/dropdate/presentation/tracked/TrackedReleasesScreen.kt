@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -62,10 +63,17 @@ fun TrackedReleasesScreen(
                 },
                 actions = {
                     if (BuildConfig.DEBUG) {
+                        IconButton(onClick = viewModel::triggerRealDataTest) {
+                            Icon(
+                                imageVector = Icons.Filled.Notifications,
+                                contentDescription = "Test real data notification",
+                                tint = TextSecondary,
+                            )
+                        }
                         IconButton(onClick = viewModel::triggerTestNotification) {
                             Icon(
                                 imageVector = Icons.Outlined.Notifications,
-                                contentDescription = "Test notification",
+                                contentDescription = "Test dummy notification",
                                 tint = TextSecondary,
                             )
                         }

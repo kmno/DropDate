@@ -14,7 +14,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.hilt.work.HiltWorker
 import androidx.work.BackoffPolicy
-import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
@@ -314,12 +313,7 @@ class AiringReminderWorker
                         flexTimeIntervalUnit = TimeUnit.HOURS,
                     ).setInitialDelay(delayMs, TimeUnit.MILLISECONDS)
                         .setInputData(workDataOf(KEY_NOTIF_TYPE to type))
-                        .setConstraints(
-                            Constraints
-                                .Builder()
-                                .setRequiresBatteryNotLow(true)
-                                .build(),
-                        ).setBackoffCriteria(
+                        .setBackoffCriteria(
                             BackoffPolicy.EXPONENTIAL,
                             BACKOFF_MINUTES,
                             TimeUnit.MINUTES,
@@ -337,6 +331,16 @@ class AiringReminderWorker
                     OneTimeWorkRequestBuilder<AiringReminderWorker>()
                         .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
                         .setInputData(workDataOf(KEY_TEST_MODE to true))
+                        .build()
+                workManager.enqueue(request)
+            }
+
+            /** Runs the real evening check immediately (no dummy data). Use to verify DAO + notif path. */
+            fun scheduleRealDataTest(workManager: WorkManager) {
+                val request =
+                    OneTimeWorkRequestBuilder<AiringReminderWorker>()
+                        .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
+                        .setInputData(workDataOf(KEY_NOTIF_TYPE to TYPE_EVENING))
                         .build()
                 workManager.enqueue(request)
             }

@@ -55,6 +55,10 @@ class TrackedReleasesViewModel
             AiringReminderWorker.scheduleTest(workManager)
         }
 
+        fun triggerRealDataTest() {
+            AiringReminderWorker.scheduleRealDataTest(workManager)
+        }
+
         fun onSheetDismissed() {
             _state.update { it.copy(selectedRelease = null) }
         }
