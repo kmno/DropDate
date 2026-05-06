@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -22,6 +23,10 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import coil3.BitmapImage
+import coil3.SingletonImageLoader
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
 import com.kmno.dropdate.MainActivity
 import com.kmno.dropdate.R
 import com.kmno.dropdate.data.local.dao.ReleaseDao
@@ -128,7 +133,7 @@ class AiringReminderWorker
         }
 
         @SuppressLint("MissingPermission") // guarded by areNotificationsAllowed() at call site
-        private fun showNotification(entity: ReleaseEntity, isEvening: Boolean) {
+        private suspend fun showNotification(entity: ReleaseEntity, isEvening: Boolean) {
             val friendlyLabel = formatFriendlyLabel(entity.episodeLabel)
             // Episode label in title for instant scannability: "Daredevil · Episode 5"
             val notifTitle = if (friendlyLabel != null) "${entity.title} · $friendlyLabel" else entity.title
@@ -147,12 +152,14 @@ class AiringReminderWorker
                         context.getString(R.string.notification_drops_today)
                     }
                 }
+            val posterBitmap = fetchBitmapOrNull(entity.posterUrl)
             val notification =
                 NotificationCompat
                     .Builder(context, CHANNEL_ID)
                     .setSmallIcon(R.drawable.ic_launcher_foreground)
                     .setContentTitle(notifTitle)
                     .setContentText(text)
+                    .apply { if (posterBitmap != null) setLargeIcon(posterBitmap) }
                     .setPriority(NotificationCompat.PRIORITY_HIGH) // required for sound on pre-Oreo
                     .setContentIntent(createPendingIntent())
                     .setAutoCancel(true)
@@ -165,7 +172,7 @@ class AiringReminderWorker
         }
 
         @SuppressLint("MissingPermission")
-        private fun showSummaryNotification(
+        private suspend fun showSummaryNotification(
             entities: List<ReleaseEntity>,
             isEvening: Boolean,
             summaryId: Int,
@@ -192,6 +199,7 @@ class AiringReminderWorker
                 inboxStyle.setSummaryText("+${entities.size - SUMMARY_ITEM_LIMIT} more")
             }
 
+            val posterBitmap = fetchBitmapOrNull(entities.first().posterUrl)
             val notification =
                 NotificationCompat
                     .Builder(context, CHANNEL_ID)
@@ -203,6 +211,7 @@ class AiringReminderWorker
                             .joinToString(", ") { it.title }
                             .let { if (entities.size > INDIVIDUAL_NOTIF_LIMIT) "$it…" else it },
                     ).setStyle(inboxStyle)
+                    .apply { if (posterBitmap != null) setLargeIcon(posterBitmap) }
                     .setPriority(NotificationCompat.PRIORITY_HIGH)
                     .setContentIntent(createPendingIntent())
                     .setAutoCancel(true)
@@ -222,6 +231,20 @@ class AiringReminderWorker
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
             )
+        }
+
+        private suspend fun fetchBitmapOrNull(url: String?): Bitmap? {
+            url ?: return null
+            return runCatching {
+                val request =
+                    ImageRequest
+                        .Builder(context)
+                        .data(url)
+                        .size(256, 256)
+                        .build()
+                val result = SingletonImageLoader.get(context).execute(request)
+                (result as? SuccessResult)?.image?.let { (it as? BitmapImage)?.bitmap }
+            }.getOrNull()
         }
 
         private fun formatFriendlyLabel(label: String?): String? {
