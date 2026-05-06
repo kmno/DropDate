@@ -35,10 +35,10 @@
     <!-- Notifications -->
     <string name="notification_channel_name">Airing Reminders</string>
     <string name="notification_channel_desc">Get notified when a tracked title airs soon</string>
-    <string name="notification_drops_tomorrow">Drops tomorrow</string>
-    <string name="notification_episode_drops">%1$s drops tomorrow</string>
-    <string name="notification_drops_today">Drops today</string>
-    <string name="notification_episode_drops_today">%1$s drops today</string>
-    <string name="notification_summary_tomorrow">%1$d releases dropping tomorrow</string>
-    <string name="notification_summary_today">%1$d releases dropping today</string>
+    <string name="notification_drops_tomorrow">Drops tomorrow. Don\'t miss it!</string>
+    <string name="notification_drops_tomorrow_on">Dropping tomorrow on %1$s</string>
+    <string name="notification_drops_today">Out today — time to watch!</string>
+    <string name="notification_drops_today_on">Available today on %1$s</string>
+    <string name="notification_summary_tomorrow">%1$d titles dropping tomorrow</string>
+    <string name="notification_summary_today">%1$d of your tracked shows are out today</string>
 </resources>

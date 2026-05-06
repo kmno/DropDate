@@ -130,29 +130,28 @@ class AiringReminderWorker
         @SuppressLint("MissingPermission") // guarded by areNotificationsAllowed() at call site
         private fun showNotification(entity: ReleaseEntity, isEvening: Boolean) {
             val friendlyLabel = formatFriendlyLabel(entity.episodeLabel)
+            // Episode label in title for instant scannability: "Daredevil · Episode 5"
+            val notifTitle = if (friendlyLabel != null) "${entity.title} · $friendlyLabel" else entity.title
+            val platform = entity.platform?.takeIf { it.isNotBlank() }
             val text =
-                if (!friendlyLabel.isNullOrBlank()) {
-                    val resId =
-                        if (isEvening) {
-                            R.string.notification_episode_drops
-                        } else {
-                            R.string.notification_episode_drops_today
-                        }
-                    context.getString(resId, friendlyLabel)
+                if (isEvening) {
+                    if (platform != null) {
+                        context.getString(R.string.notification_drops_tomorrow_on, platform)
+                    } else {
+                        context.getString(R.string.notification_drops_tomorrow)
+                    }
                 } else {
-                    val resId =
-                        if (isEvening) {
-                            R.string.notification_drops_tomorrow
-                        } else {
-                            R.string.notification_drops_today
-                        }
-                    context.getString(resId)
+                    if (platform != null) {
+                        context.getString(R.string.notification_drops_today_on, platform)
+                    } else {
+                        context.getString(R.string.notification_drops_today)
+                    }
                 }
             val notification =
                 NotificationCompat
                     .Builder(context, CHANNEL_ID)
                     .setSmallIcon(R.drawable.ic_launcher_foreground)
-                    .setContentTitle(entity.title)
+                    .setContentTitle(notifTitle)
                     .setContentText(text)
                     .setPriority(NotificationCompat.PRIORITY_HIGH) // required for sound on pre-Oreo
                     .setContentIntent(createPendingIntent())
