@@ -30,6 +30,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -48,7 +51,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.kmno.dropdate.R
 import com.kmno.dropdate.core.analytics.LocalAnalyticsHelper
 import com.kmno.dropdate.domain.model.ReleaseType
+import com.kmno.dropdate.presentation.OneTimeEvents
 import com.kmno.dropdate.presentation.schedule.components.AppIconLoadingScreen
+import com.kmno.dropdate.presentation.schedule.components.AppSnackbar
 import com.kmno.dropdate.presentation.schedule.components.ContentTypeChips
 import com.kmno.dropdate.presentation.schedule.components.LazyGrid
 import com.kmno.dropdate.presentation.schedule.components.ReleaseDetailSheet
@@ -65,6 +70,7 @@ import com.kmno.dropdate.ui.theme.SeriesRed
 import com.kmno.dropdate.ui.theme.Surface
 import com.kmno.dropdate.ui.theme.SurfaceAlt
 import com.kmno.dropdate.ui.theme.TextSecondary
+import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Suppress("LongMethod")
@@ -92,6 +98,22 @@ fun ScheduleScreen(
         if (sortedDates.isNotEmpty()) lazyListState.scrollToItem(selectedDayIndex)
     }
 
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(Unit) {
+        viewModel.events.collectLatest { event ->
+            when (event) {
+                is OneTimeEvents.SnackAlert -> {
+                    snackbarHostState.currentSnackbarData?.dismiss()
+                    snackbarHostState.showSnackbar(
+                        message = event.message,
+                        duration = SnackbarDuration.Short,
+                    )
+                }
+                is OneTimeEvents.DialogAlert -> {}
+            }
+        }
+    }
+
     Scaffold(
         modifier = modifier,
         topBar = {
@@ -100,6 +122,13 @@ fun ScheduleScreen(
                 onSearchToggle = viewModel::onSearchToggled,
                 onTrackedClick = onNavigateToTrackings,
             )
+        },
+        snackbarHost = {
+            if (state.selectedRelease == null) {
+                SnackbarHost(hostState = snackbarHostState) { data ->
+                    AppSnackbar(data)
+                }
+            }
         },
     ) { paddingValues ->
         Box(
@@ -385,8 +414,12 @@ fun ScheduleScreen(
             state.selectedRelease?.let { release ->
                 ReleaseDetailSheet(
                     release = release,
-                    onDismiss = viewModel::onSheetDismissed,
+                    onDismiss = {
+                        snackbarHostState.currentSnackbarData?.dismiss()
+                        viewModel.onSheetDismissed()
+                    },
                     onToggleTrack = { viewModel.onToggleTracking(release) },
+                    snackbarHostState = snackbarHostState,
                 )
             }
 

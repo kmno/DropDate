@@ -15,9 +15,11 @@ import com.kmno.dropdate.ui.theme.Dimens
 @Composable
 fun LazyGrid(
     releases: List<Release>,
-    onReleaseSelected: (Release) -> Unit,
+    onReleaseSelect: (Release) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     LazyVerticalGrid(
+        modifier = modifier,
         columns = GridCells.Fixed(2),
         contentPadding =
             PaddingValues(
@@ -36,7 +38,7 @@ fun LazyGrid(
             ReleaseCard(
                 release = release,
                 index = index,
-                onClick = onReleaseSelected,
+                onClick = onReleaseSelect,
                 modifier = Modifier.fillMaxWidth(),
             )
         }

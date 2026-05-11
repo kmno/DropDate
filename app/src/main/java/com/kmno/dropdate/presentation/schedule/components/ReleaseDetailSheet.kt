@@ -44,6 +44,8 @@ import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -86,6 +88,7 @@ fun ReleaseDetailSheet(
     release: Release,
     onDismiss: () -> Unit,
     onToggleTrack: () -> Unit = {},
+    snackbarHostState: SnackbarHostState? = null,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -117,178 +120,191 @@ fun ReleaseDetailSheet(
         containerColor = Background,
         dragHandle = null,
     ) {
-        Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-            release.posterUrl?.let {
-                // Hero — blurred backdrop + poster
-                Box(
-                    modifier =
-                        Modifier
-                            .fillMaxWidth()
-                            .height(220.dp),
-                ) {
-                    // Backdrop (blurred via heavy downscale)
-                    AsyncImage(
-                        model = release.backdropUrl ?: release.posterUrl,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.matchParentSize(),
-                    )
-                    // Dark scrim
-                    Box(
-                        modifier =
-                            Modifier
-                                .matchParentSize()
-                                .background(
-                                    Brush.verticalGradient(
-                                        0f to Color.Black.copy(alpha = 0.4f),
-                                        1f to Background,
-                                    ),
-                                ),
-                    )
-
-                    // Track Button
-                    TrackButton(
-                        isTracked = release.isTracked,
-                        onToggle = onToggleTrack,
-                        accentColor = accentColor,
-                        modifier =
-                            Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(Dimens.PaddingMedium),
-                    )
-
-                    // Poster thumbnail
-                    AsyncImage(
-                        model = release.posterUrl,
-                        contentDescription = release.title,
-                        contentScale = ContentScale.Crop,
-                        modifier =
-                            Modifier
-                                .align(Alignment.BottomStart)
-                                .padding(
-                                    start = Dimens.PaddingMedium,
-                                    bottom = Dimens.PaddingMedium,
-                                ).size(width = 90.dp, height = 130.dp)
-                                .clip(RoundedCornerShape(Dimens.PaddingSmall + 2.dp)),
-                    )
-                }
-            }
-
-            // Metadata
-            Column(modifier = Modifier.padding(horizontal = Dimens.PaddingMedium)) {
-                Spacer(Modifier.height(Dimens.SpacingNormal))
-
-                // Title
-                SelectionContainer {
-                    Text(
-                        text = release.title,
-                        fontSize = Dimens.FontTitle,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary,
-                    )
-                }
-
-                Spacer(Modifier.height(Dimens.SpacingSmall))
-
-                // Type · Year · Episode · Genres
-                val metaRemainder =
-                    buildString {
-                        release.airDate.year.let { append("$it") }
-                        release.episodeLabel?.let { append(" · $it") }
-                    }
-                val genres =
-                    if (release.genres.isNotEmpty()) {
-                        release.genres.joinToString(", ")
-                    } else {
-                        ""
-                    }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text =
-                            release.type.name
-                                .lowercase()
-                                .replaceFirstChar { it.uppercase() },
-                        fontSize = Dimens.FontNormal,
-                        fontWeight = FontWeight.SemiBold,
-                        color = accentColor,
-                    )
-                    if (metaRemainder.isNotBlank()) {
-                        Text(
-                            text = " · $metaRemainder",
-                            fontSize = Dimens.FontSmall,
-                            color = TextSecondary,
-                        )
-                    }
-                }
-
-                if (genres.isNotBlank()) {
-                    Text(text = genres, fontSize = Dimens.FontSmall, color = TextSecondary)
-                }
-
-                Spacer(Modifier.height(Dimens.SpacingMedium))
-
-                // Star rating
-                release.rating?.let { rating ->
-                    if (rating > 0) {
-                        StarRating(rating = rating, accentColor = accentColor)
-                        Spacer(Modifier.height(Dimens.SpacingSmall + 2.dp))
-                    }
-                }
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    // Platform Badge
-                    release.platform?.let { platform ->
-                        PlatformLogo(platform = platform)
-                        Spacer(Modifier.width(Dimens.SpacingSmall))
-                    }
-
-                    if (premiereLabel.isNotBlank()) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                            contentDescription = null,
-                            tint = TextPrimary,
-                            modifier = Modifier.size(Dimens.IconSmall),
-                        )
-                        Spacer(Modifier.width(Dimens.SpacingSmall))
-                        Text(
-                            text = premiereLabel,
-                            fontSize = Dimens.FontSmall,
-                            color =
-                                release.platform?.let { PlatformBranding.getColor(it) }
-                                    ?: TextPrimary,
-                            fontWeight = FontWeight.Bold,
-                        )
-                    }
-                }
-
-                Spacer(Modifier.height(Dimens.SpacingNormal))
-
-                // Synopsis
-                release.synopsis?.takeIf { it.isNotBlank() }?.let { synopsis ->
-                    SynopsisSection(synopsis = synopsis, accentColor = accentColor)
-                    Spacer(Modifier.height(Dimens.SpacingLarge))
-                }
-
-                // CTA
-                if (release.status == ReleaseStatus.RELEASED) {
-                    ReleasedBanner(release = release)
-                } else {
+        Box(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                release.posterUrl?.let {
+                    // Hero — blurred backdrop + poster
                     Box(
                         modifier =
                             Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(Dimens.SpacingNormal))
-                                .background(SurfaceAlt)
-                                .padding(Dimens.SpacingNormal),
-                        contentAlignment = Alignment.Center,
+                                .height(220.dp),
                     ) {
-                        CountdownText(airDate = release.airDate, airTime = release.airTime)
+                        // Backdrop (blurred via heavy downscale)
+                        AsyncImage(
+                            model = release.backdropUrl ?: release.posterUrl,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.matchParentSize(),
+                        )
+                        // Dark scrim
+                        Box(
+                            modifier =
+                                Modifier
+                                    .matchParentSize()
+                                    .background(
+                                        Brush.verticalGradient(
+                                            0f to Color.Black.copy(alpha = 0.4f),
+                                            1f to Background,
+                                        ),
+                                    ),
+                        )
+
+                        // Track Button
+                        TrackButton(
+                            isTracked = release.isTracked,
+                            onToggle = onToggleTrack,
+                            accentColor = accentColor,
+                            modifier =
+                                Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(Dimens.PaddingMedium),
+                        )
+
+                        // Poster thumbnail
+                        AsyncImage(
+                            model = release.posterUrl,
+                            contentDescription = release.title,
+                            contentScale = ContentScale.Crop,
+                            modifier =
+                                Modifier
+                                    .align(Alignment.BottomStart)
+                                    .padding(
+                                        start = Dimens.PaddingMedium,
+                                        bottom = Dimens.PaddingMedium,
+                                    ).size(width = 90.dp, height = 130.dp)
+                                    .clip(RoundedCornerShape(Dimens.PaddingSmall + 2.dp)),
+                        )
                     }
                 }
 
-                Spacer(Modifier.height(Dimens.PaddingExtraLarge))
+                // Metadata
+                Column(modifier = Modifier.padding(horizontal = Dimens.PaddingMedium)) {
+                    Spacer(Modifier.height(Dimens.SpacingNormal))
+
+                    // Title
+                    SelectionContainer {
+                        Text(
+                            text = release.title,
+                            fontSize = Dimens.FontTitle,
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimary,
+                        )
+                    }
+
+                    Spacer(Modifier.height(Dimens.SpacingSmall))
+
+                    // Type · Year · Episode · Genres
+                    val metaRemainder =
+                        buildString {
+                            release.airDate.year.let { append("$it") }
+                            release.episodeLabel?.let { append(" · $it") }
+                        }
+                    val genres =
+                        if (release.genres.isNotEmpty()) {
+                            release.genres.joinToString(", ")
+                        } else {
+                            ""
+                        }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text =
+                                release.type.name
+                                    .lowercase()
+                                    .replaceFirstChar { it.uppercase() },
+                            fontSize = Dimens.FontNormal,
+                            fontWeight = FontWeight.SemiBold,
+                            color = accentColor,
+                        )
+                        if (metaRemainder.isNotBlank()) {
+                            Text(
+                                text = " · $metaRemainder",
+                                fontSize = Dimens.FontSmall,
+                                color = TextSecondary,
+                            )
+                        }
+                    }
+
+                    if (genres.isNotBlank()) {
+                        Text(text = genres, fontSize = Dimens.FontSmall, color = TextSecondary)
+                    }
+
+                    Spacer(Modifier.height(Dimens.SpacingMedium))
+
+                    // Star rating
+                    release.rating?.let { rating ->
+                        if (rating > 0) {
+                            StarRating(rating = rating, accentColor = accentColor)
+                            Spacer(Modifier.height(Dimens.SpacingSmall + 2.dp))
+                        }
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        // Platform Badge
+                        release.platform?.let { platform ->
+                            PlatformLogo(platform = platform)
+                            Spacer(Modifier.width(Dimens.SpacingSmall))
+                        }
+
+                        if (premiereLabel.isNotBlank()) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = null,
+                                tint = TextPrimary,
+                                modifier = Modifier.size(Dimens.IconSmall),
+                            )
+                            Spacer(Modifier.width(Dimens.SpacingSmall))
+                            Text(
+                                text = premiereLabel,
+                                fontSize = Dimens.FontSmall,
+                                color =
+                                    release.platform?.let { PlatformBranding.getColor(it) }
+                                        ?: TextPrimary,
+                                fontWeight = FontWeight.Bold,
+                            )
+                        }
+                    }
+
+                    Spacer(Modifier.height(Dimens.SpacingNormal))
+
+                    // Synopsis
+                    release.synopsis?.takeIf { it.isNotBlank() }?.let { synopsis ->
+                        SynopsisSection(synopsis = synopsis, accentColor = accentColor)
+                        Spacer(Modifier.height(Dimens.SpacingLarge))
+                    }
+
+                    // CTA
+                    if (release.status == ReleaseStatus.RELEASED) {
+                        ReleasedBanner(release = release)
+                    } else {
+                        Box(
+                            modifier =
+                                Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(Dimens.SpacingNormal))
+                                    .background(SurfaceAlt)
+                                    .padding(Dimens.SpacingNormal),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            CountdownText(airDate = release.airDate, airTime = release.airTime)
+                        }
+                    }
+
+                    Spacer(Modifier.height(Dimens.PaddingExtraLarge))
+                }
+            }
+
+            snackbarHostState?.let { host ->
+                SnackbarHost(
+                    hostState = host,
+                    modifier =
+                        Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = Dimens.PaddingLarge),
+                    snackbar = { data -> AppSnackbar(data) },
+                )
             }
         }
     }
