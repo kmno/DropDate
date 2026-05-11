@@ -7,6 +7,7 @@ import com.kmno.dropdate.domain.model.Release
 import com.kmno.dropdate.domain.usecase.GetTrackedReleasesUseCase
 import com.kmno.dropdate.domain.usecase.SetTrackingUseCase
 import com.kmno.dropdate.presentation.BaseViewModel
+import com.kmno.dropdate.presentation.OneTimeEvents
 import com.kmno.dropdate.worker.AiringReminderWorker
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
@@ -84,16 +85,27 @@ class TrackedReleasesViewModel
                 s.copy(selectedRelease = updated ?: s.selectedRelease)
             }
             launch {
-                setTracking(release, newTracked).onFailure {
-                    // Revert optimistic update on failure
-                    _state.update { s ->
-                        val reverted =
-                            s.selectedRelease
-                                ?.takeIf { it.id == release.id }
-                                ?.copy(isTracked = release.isTracked)
-                        s.copy(selectedRelease = reverted ?: s.selectedRelease)
+                setTracking(release, newTracked)
+                    .onSuccess {
+                        sendEvent(
+                            OneTimeEvents.SnackAlert(
+                                if (release.isTracked.not()) {
+                                    "Tracked!"
+                                } else {
+                                    "Removed from Trackings!"
+                                },
+                            ),
+                        )
+                    }.onFailure {
+                        // Revert optimistic update on failure
+                        _state.update { s ->
+                            val reverted =
+                                s.selectedRelease
+                                    ?.takeIf { it.id == release.id }
+                                    ?.copy(isTracked = release.isTracked)
+                            s.copy(selectedRelease = reverted ?: s.selectedRelease)
+                        }
                     }
-                }
             }
         }
     }

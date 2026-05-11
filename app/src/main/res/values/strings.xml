@@ -6,6 +6,8 @@
     <string name="error_prefix">Error: %1$s</string>
     <string name="fetching_releases">Fetching this week\'s releases…</string>
 
+    <string name="no_trackings_found">Tracking List is Empty.</string>
+
     <!-- Content Types -->
     <string name="filter_all">All</string>
     <string name="filter_movies">Movies</string>

@@ -6,10 +6,10 @@ import com.kmno.dropdate.core.analytics.AnalyticsHelper
 import com.kmno.dropdate.domain.model.Release
 import com.kmno.dropdate.domain.usecase.CleanupReleasesUseCase
 import com.kmno.dropdate.domain.usecase.GetWeekReleasesUseCase
-import com.kmno.dropdate.domain.usecase.SearchReleasesUseCase
 import com.kmno.dropdate.domain.usecase.SetTrackingUseCase
 import com.kmno.dropdate.domain.usecase.SyncReleasesUseCase
 import com.kmno.dropdate.presentation.BaseViewModel
+import com.kmno.dropdate.presentation.OneTimeEvents
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -36,7 +36,6 @@ class ScheduleViewModel
         private val getWeekReleases: GetWeekReleasesUseCase,
         private val syncReleases: SyncReleasesUseCase,
         private val cleanupReleases: CleanupReleasesUseCase,
-        private val searchReleasesUseCase: SearchReleasesUseCase,
         private val setTracking: SetTrackingUseCase,
     ) : BaseViewModel() {
         private val today = LocalDate.now()
@@ -58,6 +57,10 @@ class ScheduleViewModel
                 },
             )
         val state: StateFlow<ScheduleUiState> = _state.asStateFlow()
+
+        companion object {
+            const val SEARCH_QUERY_MIN_LEN = 3
+        }
 
         init {
             // Observe DB — reacts to week/day/filter changes
@@ -216,7 +219,7 @@ class ScheduleViewModel
 
         fun onSearchQueryChanged(query: String) {
             _state.update { it.copy(searchQuery = query) }
-            if (query.length >= 3) {
+            if (query.length >= SEARCH_QUERY_MIN_LEN) {
                 logAnalyticsEvent(
                     AnalyticsHelper.Events.SEARCH,
                     Bundle().apply {
@@ -264,16 +267,27 @@ class ScheduleViewModel
                 s.copy(selectedRelease = updated ?: s.selectedRelease)
             }
             launch {
-                setTracking(release, newTracked).onFailure {
-                    // Revert optimistic update on failure
-                    _state.update { s ->
-                        val reverted =
-                            s.selectedRelease
-                                ?.takeIf { it.id == release.id }
-                                ?.copy(isTracked = release.isTracked)
-                        s.copy(selectedRelease = reverted ?: s.selectedRelease)
+                setTracking(release, newTracked)
+                    .onSuccess {
+                        sendEvent(
+                            OneTimeEvents.SnackAlert(
+                                if (release.isTracked.not()) {
+                                    "Tracked!"
+                                } else {
+                                    "Removed from Trackings!"
+                                },
+                            ),
+                        )
+                    }.onFailure {
+                        // Revert optimistic update on failure
+                        _state.update { s ->
+                            val reverted =
+                                s.selectedRelease
+                                    ?.takeIf { it.id == release.id }
+                                    ?.copy(isTracked = release.isTracked)
+                            s.copy(selectedRelease = reverted ?: s.selectedRelease)
+                        }
                     }
-                }
             }
         }
 
